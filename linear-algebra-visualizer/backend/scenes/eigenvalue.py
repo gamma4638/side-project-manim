@@ -11,6 +11,7 @@ Color palette from 3B1B:
 - Text: #ece6e2 (cream)
 """
 
+import json
 import os
 import numpy as np
 from manim import *
@@ -38,9 +39,9 @@ class EigenvalueScene(Scene):
         self.camera.background_color = BACKGROUND_COLOR
 
         # Get matrix from environment variable or use default
-        matrix_str = os.environ.get("MATRIX_VALUES", "2,1,1,2")
-        values = [float(x) for x in matrix_str.split(",")]
-        matrix = np.array([[values[0], values[1]], [values[2], values[3]]])
+        params = json.loads(os.environ.get("SCENE_PARAMS", '{"matrix_2x2": [[2, 1], [1, 2]]}'))
+        m = params["matrix_2x2"]
+        matrix = np.array([[m[0][0], m[0][1]], [m[1][0], m[1][1]]])
 
         # Calculate eigenvalues and eigenvectors
         eigenvalues, eigenvectors = np.linalg.eig(matrix)
