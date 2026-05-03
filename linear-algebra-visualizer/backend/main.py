@@ -1,9 +1,12 @@
 import asyncio
 import json
+import logging
 import os
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -56,7 +59,7 @@ async def render_scene(topic_id: str, params: Dict[str, Any]) -> Optional[Path]:
     render_id = str(uuid.uuid4())[:8]
     output_name = f"{topic_id}_{render_id}"
     module_path = config.module.replace(".", "/")
-    scene_file = f"/app/{module_path}.py"
+    scene_file = f"{module_path}.py"
 
     env = os.environ.copy()
     env["SCENE_PARAMS"] = json.dumps(merged)
@@ -77,10 +80,15 @@ async def render_scene(topic_id: str, params: Dict[str, Any]) -> Optional[Path]:
             stderr=asyncio.subprocess.PIPE,
             cwd="/app",
         )
-        await asyncio.wait_for(proc.communicate(), timeout=120)
+        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
         if proc.returncode != 0:
+            logger.warning("Manim render failed for %s: %s", topic_id, stderr.decode(errors="replace"))
             return None
-    except (asyncio.TimeoutError, Exception):
+    except asyncio.TimeoutError:
+        logger.warning("Manim render timed out for %s", topic_id)
+        return None
+    except Exception as e:
+        logger.warning("Manim render error for %s: %s", topic_id, e)
         return None
 
     for path in OUTPUT_DIR.rglob(f"{output_name}.mp4"):
@@ -93,7 +101,7 @@ async def chat(request: ChatRequest):
     history = [{"role": h.role, "content": h.content} for h in request.history]
 
     try:
-        parsed = await asyncio.get_event_loop().run_in_executor(
+        parsed = await asyncio.get_running_loop().run_in_executor(
             None, parse_request, request.message, history
         )
     except Exception:

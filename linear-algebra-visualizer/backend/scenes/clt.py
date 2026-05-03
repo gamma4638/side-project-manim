@@ -43,11 +43,13 @@ class CLTScene(Scene):
         samp_lbl = Text(f"Sample means (n={n})", color=TEXT, font_size=20).next_to(axes2, DOWN, buff=0.15)
 
         hist_vals, bins = np.histogram(samples, bins=25, range=(x_lo, x_hi))
-        bar_w = (bins[1] - bins[0]) * axes2.x_length / (x_hi - x_lo)
         bars = VGroup()
         for i, count in enumerate(hist_vals):
-            h = count / 500 * axes2.y_length
-            bar = Rectangle(width=bar_w, height=h, fill_color=HIST_COLOR, fill_opacity=0.65, stroke_width=0.5, stroke_color=WHITE)
+            bar = Rectangle(
+                width=abs(axes2.c2p(bins[i + 1], 0)[0] - axes2.c2p(bins[i], 0)[0]),
+                height=abs(axes2.c2p(0, count)[1] - axes2.c2p(0, 0)[1]),
+                fill_color=HIST_COLOR, fill_opacity=0.65, stroke_width=0.5, stroke_color=WHITE,
+            )
             bar.move_to(axes2.c2p((bins[i] + bins[i + 1]) / 2, count / 2))
             bars.add(bar)
 
