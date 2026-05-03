@@ -1,208 +1,135 @@
-"""
-FastAPI server for Linear Algebra Visualizer
-Renders manim scenes and serves the output
-"""
-
+import asyncio
+import json
 import os
-import subprocess
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from dotenv import load_dotenv
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-app = FastAPI(
-    title="Linear Algebra Visualizer API",
-    description="3B1B-style linear algebra visualization using ManimCE",
-    version="1.0.0"
-)
+load_dotenv()
 
-# CORS configuration for React dev server
+from backend.llm.parser import parse_request
+from backend.scene_registry import SCENE_REGISTRY
+
+app = FastAPI(title="MathViz API", version="2.0.0")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Output directory for rendered files
-OUTPUT_DIR = Path("/app/output")
-OUTPUT_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR = Path(os.environ.get("OUTPUT_DIR", "/app/output"))
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FRONTEND_DIR = Path(os.environ.get("FRONTEND_DIR", "/app/frontend"))
 
-# Mount static files
-app.mount("/output", StaticFiles(directory=str(OUTPUT_DIR)), name="output")
+app.mount("/output", StaticFiles(directory=str(OUTPUT_DIR), check_dir=False), name="output")
 
-
-class Matrix2x2(BaseModel):
-    """2x2 matrix input"""
-    a: float = Field(..., description="Top-left element")
-    b: float = Field(..., description="Top-right element")
-    c: float = Field(..., description="Bottom-left element")
-    d: float = Field(..., description="Bottom-right element")
-
-    def to_list(self) -> List[List[float]]:
-        return [[self.a, self.b], [self.c, self.d]]
+SUPPORTED_TOPICS_LIST = "\n".join(f"- {k}" for k in SCENE_REGISTRY.keys())
 
 
-class RenderOptions(BaseModel):
-    """Rendering options"""
-    quality: str = Field(default="m", description="Quality: l (low), m (medium), h (high)")
-    format: str = Field(default="mp4", description="Output format: mp4 or png")
+class HistoryItem(BaseModel):
+    role: str
+    content: str
 
 
-class RenderRequest(BaseModel):
-    """Request body for rendering"""
-    matrix: Matrix2x2
-    options: Optional[RenderOptions] = None
-
-
-class ComplexNumber(BaseModel):
-    """Complex number representation"""
-    re: float
-    im: float
-
-
-class RenderResponse(BaseModel):
-    """Response with rendered file URLs"""
-    video_url: Optional[str] = None
-    image_url: Optional[str] = None
-    eigenvalues: List[ComplexNumber] = []
-    eigenvectors: List[List[float]] = []
+class ChatRequest(BaseModel):
     message: str
+    history: List[HistoryItem] = []
 
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "manim-visualizer"}
+class ChatResponse(BaseModel):
+    explanation: str
+    video_url: Optional[str] = None
+    topic_id: Optional[str] = None
 
 
-@app.post("/render/eigenvalue", response_model=RenderResponse)
-async def render_eigenvalue(request: RenderRequest):
-    """
-    Render eigenvalue/eigenvector visualization for a 2x2 matrix
-    """
-    import numpy as np
-
-    matrix = request.matrix.to_list()
-    options = request.options or RenderOptions()
-
-    # Calculate eigenvalues and eigenvectors
-    try:
-        np_matrix = np.array(matrix)
-        eigenvalues, eigenvectors = np.linalg.eig(np_matrix)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid matrix: {str(e)}")
-
-    # Generate unique ID for this render
+async def render_scene(topic_id: str, params: Dict[str, Any]) -> Optional[Path]:
+    config = SCENE_REGISTRY[topic_id]
+    merged = {**config.defaults, **params}
     render_id = str(uuid.uuid4())[:8]
+    output_name = f"{topic_id}_{render_id}"
+    module_path = config.module.replace(".", "/")
+    scene_file = f"/app/{module_path}.py"
 
-    # Quality flag mapping
-    quality_flags = {
-        "l": "-ql",   # 480p
-        "m": "-qm",   # 720p
-        "h": "-qh",   # 1080p
-    }
-    quality_flag = quality_flags.get(options.quality, "-qm")
-
-    # Prepare matrix string for scene
-    matrix_str = f"{matrix[0][0]},{matrix[0][1]},{matrix[1][0]},{matrix[1][1]}"
-
-    # Build manim command
-    scene_path = "/app/backend/scenes/eigenvalue.py"
-    output_file = f"eigenvalue_{render_id}"
+    env = os.environ.copy()
+    env["SCENE_PARAMS"] = json.dumps(merged)
 
     cmd = [
-        "manim",
-        quality_flag,
-        scene_path,
-        "EigenvalueScene",
-        "-o", output_file,
+        "manim", "-qm",
+        scene_file,
+        config.class_name,
+        "-o", output_name,
         "--media_dir", str(OUTPUT_DIR),
     ]
 
-    # Set environment variable for matrix values
-    env = os.environ.copy()
-    env["MATRIX_VALUES"] = matrix_str
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            env=env,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd="/app",
+        )
+        await asyncio.wait_for(proc.communicate(), timeout=120)
+        if proc.returncode != 0:
+            return None
+    except (asyncio.TimeoutError, Exception):
+        return None
+
+    for path in OUTPUT_DIR.rglob(f"{output_name}.mp4"):
+        return path
+    return None
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    history = [{"role": h.role, "content": h.content} for h in request.history]
 
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=120,  # 2 minute timeout
-            env=env,
-            cwd="/app"
+        parsed = await asyncio.get_event_loop().run_in_executor(
+            None, parse_request, request.message, history
+        )
+    except Exception:
+        return ChatResponse(
+            explanation="서비스 오류가 발생했어요. 잠시 후 다시 시도해주세요.",
         )
 
-        if result.returncode != 0:
-            error_msg = result.stderr or result.stdout
-            raise HTTPException(
-                status_code=500,
-                detail=f"Manim rendering failed: {error_msg}"
-            )
+    topic_id = parsed.get("topic_id", "unknown")
+    confidence = float(parsed.get("confidence", 0))
 
-    except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=504, detail="Rendering timed out")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Rendering error: {str(e)}")
+    if topic_id == "unknown" or confidence < 0.6 or topic_id not in SCENE_REGISTRY:
+        return ChatResponse(
+            explanation=f"지원하지 않는 주제예요. 아래 주제들을 시도해보세요:\n{SUPPORTED_TOPICS_LIST}",
+        )
 
-    # Find the output file
+    video_path = await render_scene(topic_id, parsed.get("params", {}))
+
     video_url = None
-    image_url = None
+    if video_path and video_path.exists():
+        try:
+            rel = video_path.relative_to(OUTPUT_DIR)
+            video_url = f"/output/{rel}"
+        except ValueError:
+            video_url = f"/output/{video_path.name}"
 
-    # Search for output files
-    for ext in [".mp4", ".png", ".gif"]:
-        # Manim creates files in videos/{quality}/ or images/
-        possible_paths = [
-            OUTPUT_DIR / "videos" / "eigenvalue" / "720p30" / f"{output_file}{ext}",
-            OUTPUT_DIR / "videos" / "eigenvalue" / "480p15" / f"{output_file}{ext}",
-            OUTPUT_DIR / "videos" / "eigenvalue" / "1080p60" / f"{output_file}{ext}",
-            OUTPUT_DIR / "images" / "eigenvalue" / f"{output_file}{ext}",
-            OUTPUT_DIR / f"{output_file}{ext}",
-        ]
-
-        for path in possible_paths:
-            if path.exists():
-                rel_path = path.relative_to(OUTPUT_DIR)
-                url = f"/output/{rel_path}"
-                if ext == ".mp4":
-                    video_url = url
-                else:
-                    image_url = url
-                break
-
-    # Convert complex eigenvalues to serializable format
-    eigen_vals = [
-        ComplexNumber(re=float(ev.real), im=float(ev.imag))
-        for ev in eigenvalues
-    ]
-    # Handle complex eigenvectors (convert to real part only for display)
-    eigen_vecs = []
-    for vec in eigenvectors.T.tolist():
-        if isinstance(vec[0], complex):
-            eigen_vecs.append([float(x.real) for x in vec])
-        else:
-            eigen_vecs.append([float(x) for x in vec])
-
-    return RenderResponse(
+    return ChatResponse(
+        explanation=parsed.get("explanation", ""),
         video_url=video_url,
-        image_url=image_url,
-        eigenvalues=eigen_vals,
-        eigenvectors=eigen_vecs,
-        message="Rendering completed successfully"
+        topic_id=topic_id,
     )
 
 
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "name": "Linear Algebra Visualizer API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "mathviz"}
+
+
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
