@@ -1,27 +1,14 @@
-FROM python:3.11-slim
+# manimcommunity/manim: pycairo, cairo, LaTeX, ffmpeg, manim 전부 사전 설치
+FROM manimcommunity/manim:stable
 
-RUN apt-get update && apt-get install -y \
-    ffmpeg \
-    libcairo2-dev \
-    libpango1.0-dev \
-    texlive \
-    texlive-latex-extra \
-    texlive-fonts-extra \
-    texlive-latex-recommended \
-    texlive-science \
-    tipa \
-    libffi-dev \
-    git \
-    pkg-config \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+USER root
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
+# 웹 프레임워크 의존성만 설치 (manim/pycairo는 base image 제공)
 COPY pyproject.toml uv.lock ./
-RUN UV_SYSTEM_PYTHON=1 uv pip install meson meson-python ninja
 RUN UV_SYSTEM_PYTHON=1 uv sync --frozen --no-dev
 
 COPY backend/ ./backend/
