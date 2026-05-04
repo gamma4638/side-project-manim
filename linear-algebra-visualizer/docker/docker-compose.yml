@@ -10,7 +10,7 @@ services:
     volumes:
       - ../output:/app/output
     env_file:
-      - ../.env
+      - ../../.env
     environment:
       - PYTHONUNBUFFERED=1
     healthcheck:

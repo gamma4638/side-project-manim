@@ -2,7 +2,8 @@ import json
 import os
 from typing import Any, Dict, List
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 SUPPORTED_TOPICS = [
     "eigenvalue", "linear_transform", "determinant", "basis_change",
@@ -40,11 +41,9 @@ JSON schema:
 
 
 def _strip_markdown(text: str) -> str:
+    import re
     text = text.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.startswith("```")]
-        text = "\n".join(lines).strip()
+    text = re.sub(r"```[\w]*\n?", "", text).strip()
     return text
 
 
@@ -53,18 +52,19 @@ def parse_request(message: str, history: List[Dict[str, str]]) -> Dict[str, Any]
     if not api_key:
         raise ValueError("GOOGLE_API_KEY not set")
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
-        system_instruction=SYSTEM_PROMPT,
-    )
+    client = genai.Client(api_key=api_key)
 
-    chat_history = []
+    contents: List[types.Content] = []
     for h in history[-6:]:
         role = "user" if h.get("role") == "user" else "model"
-        chat_history.append({"role": role, "parts": [h.get("content", "")]})
+        contents.append(types.Content(role=role, parts=[types.Part(text=h.get("content", ""))]))
+    contents.append(types.Content(role="user", parts=[types.Part(text=message)]))
 
-    chat = model.start_chat(history=chat_history)
-    response = chat.send_message(message)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=contents,
+        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
+    )
+
     text = _strip_markdown(response.text)
     return json.loads(text)

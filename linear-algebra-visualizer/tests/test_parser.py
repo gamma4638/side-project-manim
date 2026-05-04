@@ -1,24 +1,26 @@
 import json
 import os
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Mock the google.generativeai module if not installed
-import sys
-if 'google.generativeai' not in sys.modules:
-    sys.modules['google'] = MagicMock()
-    sys.modules['google.generativeai'] = MagicMock()
+# Mock google.genai if not installed locally
+if 'google.genai' not in sys.modules:
+    mock_google = MagicMock()
+    sys.modules['google'] = mock_google
+    sys.modules['google.genai'] = MagicMock()
+    sys.modules['google.genai.types'] = MagicMock()
 
 
-def make_mock_gemini(response_dict: dict):
+def make_mock_client(response_dict: dict):
     mock_response = MagicMock()
     mock_response.text = json.dumps(response_dict)
-    mock_chat = MagicMock()
-    mock_chat.send_message.return_value = mock_response
-    mock_model = MagicMock()
-    mock_model.start_chat.return_value = mock_chat
-    return mock_model
+    mock_models = MagicMock()
+    mock_models.generate_content.return_value = mock_response
+    mock_client = MagicMock()
+    mock_client.models = mock_models
+    return mock_client
 
 
 @pytest.fixture(autouse=True)
@@ -36,7 +38,7 @@ def test_parse_returns_eigenvalue_topic():
         "confidence": 0.95,
     }
 
-    with patch("backend.llm.parser.genai.GenerativeModel", return_value=make_mock_gemini(fake_response)):
+    with patch("backend.llm.parser.genai.Client", return_value=make_mock_client(fake_response)):
         result = parse_request("고유값 시각화해줘", [])
 
     assert result["topic_id"] == "eigenvalue"
@@ -54,7 +56,7 @@ def test_parse_returns_unknown_for_unsupported():
         "confidence": 0.2,
     }
 
-    with patch("backend.llm.parser.genai.GenerativeModel", return_value=make_mock_gemini(fake_response)):
+    with patch("backend.llm.parser.genai.Client", return_value=make_mock_client(fake_response)):
         result = parse_request("오늘 날씨 알려줘", [])
 
     assert result["topic_id"] == "unknown"
@@ -67,12 +69,12 @@ def test_parse_strips_markdown_code_blocks():
     payload = {"topic_id": "fourier", "params": {"num_terms": 7}, "explanation": "푸리에", "confidence": 0.9}
     mock_response = MagicMock()
     mock_response.text = f"```json\n{json.dumps(payload)}\n```"
-    mock_chat = MagicMock()
-    mock_chat.send_message.return_value = mock_response
-    mock_model = MagicMock()
-    mock_model.start_chat.return_value = mock_chat
+    mock_models = MagicMock()
+    mock_models.generate_content.return_value = mock_response
+    mock_client = MagicMock()
+    mock_client.models = mock_models
 
-    with patch("backend.llm.parser.genai.GenerativeModel", return_value=mock_model):
+    with patch("backend.llm.parser.genai.Client", return_value=mock_client):
         result = parse_request("푸리에 7개 항으로 보여줘", [])
 
     assert result["topic_id"] == "fourier"
