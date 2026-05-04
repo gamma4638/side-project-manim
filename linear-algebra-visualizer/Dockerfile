@@ -1,15 +1,19 @@
-# manimcommunity/manim: pycairo, cairo, LaTeX, ffmpeg, manim 전부 사전 설치
 FROM manimcommunity/manim:stable
 
 USER root
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
 WORKDIR /app
 
-# 웹 프레임워크 의존성만 설치 (manim/pycairo는 base image 제공)
-COPY pyproject.toml uv.lock ./
-RUN UV_SYSTEM_PYTHON=1 uv sync --frozen --no-dev
+RUN /opt/venv/bin/pip install --no-cache-dir \
+    "fastapi==0.109.2" \
+    "uvicorn[standard]==0.27.1" \
+    "python-multipart==0.0.9" \
+    "google-genai>=1.0.0" \
+    "python-dotenv>=1.0.0" \
+    "httpx>=0.24.0"
+
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
