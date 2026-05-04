@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY backend/requirements.txt .
+# pycairo는 WSL2 clock skew 회피를 위해 --no-build-isolation으로 먼저 설치
+RUN pip install --no-cache-dir --no-build-isolation pycairo
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
