@@ -4,6 +4,7 @@ import os
 
 import numpy as np
 from manim import *
+from scipy.special import erfinv as _erfinv
 
 BG = "#0c1b33"
 TEXT = "#ece6e2"
@@ -14,7 +15,7 @@ PVAL_COLOR = "#ffff00"
 
 
 def norm_ppf(p: float) -> float:
-    return math.sqrt(2) * math.erfinv(2 * p - 1)
+    return math.sqrt(2) * float(_erfinv(2 * p - 1))
 
 
 def norm_cdf(x: float) -> float:
