@@ -699,5 +699,82 @@
   <span class="footer-copy">© 2026 MathViz. All rights reserved.</span>
 </footer>
 
+<script>
+(async function () {
+  const grid = document.querySelector('.packs-grid');
+  const sectionLabel = document.querySelector('.packs-section .section-label');
+  const sectionTitle = document.querySelector('.packs-section .section-title');
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function minithumb(topicId) {
+    const bg = `<rect width="140" height="80" fill="#050608"/>`;
+    const grid = `<g stroke="rgba(255,255,255,0.04)" stroke-width="0.5"><line x1="35" y1="0" x2="35" y2="80"/><line x1="70" y1="0" x2="70" y2="80"/><line x1="105" y1="0" x2="105" y2="80"/><line x1="0" y1="40" x2="140" y2="40"/></g>`;
+    const shapes = {
+      eigenvalue: `<line x1="70" y1="40" x2="105" y2="20" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/><line x1="70" y1="40" x2="42" y2="57" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/><text class="teq" x="8" y="14">Av=λv</text>`,
+      linear_transform: `<line x1="70" y1="40" x2="115" y2="18" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/><line x1="70" y1="40" x2="40" y2="68" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/><text class="teq" x="8" y="14">T(v)</text>`,
+      determinant: `<rect x="30" y="20" width="36" height="40" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><text class="teq" x="8" y="14">det(A)</text>`,
+      basis_change: `<line x1="70" y1="40" x2="110" y2="15" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/><line x1="70" y1="40" x2="100" y2="68" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/><text class="teq" x="8" y="14">PDP⁻¹</text>`,
+      fourier: `<path d="M 10,40 Q 28,10 46,40 Q 64,70 82,40 Q 100,10 118,40" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.4"/><text class="teq" x="8" y="14">Fourier</text>`,
+      taylor_series: `<path d="M 15,40 Q 40,15 70,40 Q 100,65 125,40" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.4"/><text class="teq" x="8" y="14">Taylor</text>`,
+      derivative: `<path d="M 15,65 Q 50,50 75,30 Q 95,15 125,10" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/><text class="teq" x="8" y="14">f'(x)</text>`,
+      clt: `<rect x="30" y="50" width="12" height="22" fill="rgba(255,255,255,0.3)"/><rect x="46" y="35" width="12" height="37" fill="rgba(255,255,255,0.5)"/><rect x="62" y="20" width="12" height="52" fill="rgba(255,255,255,0.65)"/><rect x="78" y="35" width="12" height="37" fill="rgba(255,255,255,0.5)"/><rect x="94" y="50" width="12" height="22" fill="rgba(255,255,255,0.3)"/><text class="tlb" x="8" y="14">CLT</text>`,
+      mle: `<path d="M 15,65 Q 40,55 65,20 Q 85,50 115,65" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/><text class="teq" x="8" y="14">MLE</text>`,
+      hypothesis_test: `<path d="M 15,65 Q 40,55 65,20 Q 85,50 115,65" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.4"/><line x1="40" y1="10" x2="40" y2="65" stroke="rgba(255,255,255,0.3)" stroke-width="0.8" stroke-dasharray="2,2"/><text class="teq" x="8" y="14">H₀</text>`,
+      standard_error: `<path d="M 15,65 Q 40,55 70,20 Q 100,50 125,65" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"/><text class="teq" x="8" y="14">SE</text>`,
+    };
+    const inner = shapes[topicId] || shapes.eigenvalue;
+    return `<svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">${bg}${grid}${inner}</svg>`;
+  }
+
+  function packCardHtml(pack) {
+    const topics = (pack.topics || []).slice(0, 4);
+    while (topics.length < 4) topics.push(topics[0] || 'eigenvalue');
+    const thumbs = topics.map(t => `<div class="pack-thumb-cell">${minithumb(t)}</div>`).join('');
+    const meta = `핵심 개념 ${pack.concept_count}개${pack.qa_count ? ' · 학생 Q&A ' + pack.qa_count + '개' : ''}`;
+    const date = pack.created_at ? new Date(pack.created_at).toLocaleDateString('ko-KR') : '';
+    const statusColor = pack.status === 'complete' ? 'var(--green, #4ade80)' : 'var(--muted, #6b7280)';
+    const statusText = pack.status === 'complete' ? '완료' : '생성 중';
+    return `
+      <a class="pack-card" href="/pack.html?id=${esc(pack.id)}">
+        <div class="pack-thumbs">${thumbs}</div>
+        <div class="pack-body">
+          <div class="pack-subject">${esc(date)}</div>
+          <div class="pack-title">${esc(pack.title)}</div>
+          <div class="pack-meta">${esc(meta)}</div>
+        </div>
+        <div class="pack-footer">
+          <span class="pack-link">보러가기 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="pack-count" style="color:${statusColor}">${statusText}</span>
+        </div>
+      </a>`;
+  }
+
+  try {
+    const res = await fetch('/api/packs');
+    if (!res.ok) return;
+    const packs = await res.json();
+    if (!packs.length) {
+      if (sectionLabel) sectionLabel.textContent = 'Your packs';
+      if (sectionTitle) sectionTitle.textContent = '강의 팩';
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:56px 24px;color:var(--muted)">
+          <div style="font-size:32px;margin-bottom:14px;font-family:var(--mono)">∑</div>
+          <div style="font-size:15px;font-weight:600;color:var(--muted2);margin-bottom:6px">아직 생성된 강의 팩이 없어요</div>
+          <div style="font-size:13px;margin-bottom:20px">PDF를 업로드하면 Manim 시각화 영상 팩이 만들어집니다</div>
+          <a href="/create.html" style="color:var(--bg);background:var(--accent);text-decoration:none;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;display:inline-block">첫 팩 만들기 →</a>
+        </div>`;
+      return;
+    }
+    if (sectionLabel) sectionLabel.textContent = 'Your packs';
+    if (sectionTitle) sectionTitle.textContent = '강의 팩 목록';
+    grid.innerHTML = packs.map(packCardHtml).join('');
+  } catch (e) {
+    // API 실패 시 기존 샘플 카드 유지
+  }
+})();
+</script>
 </body>
 </html>

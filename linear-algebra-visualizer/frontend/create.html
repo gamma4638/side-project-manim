@@ -473,7 +473,7 @@
 
   <!-- STEPPER -->
   <div class="stepper" id="stepper">
-    <div class="step done" id="step1">
+    <div class="step" id="step1">
       <div class="step-icon">
         <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
@@ -483,9 +483,9 @@
       </div>
     </div>
 
-    <div class="step-connector done"></div>
+    <div class="step-connector"></div>
 
-    <div class="step done" id="step2">
+    <div class="step" id="step2">
       <div class="step-icon">
         <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
@@ -495,9 +495,9 @@
       </div>
     </div>
 
-    <div class="step-connector done"></div>
+    <div class="step-connector"></div>
 
-    <div class="step active" id="step3">
+    <div class="step" id="step3">
       <div class="step-icon">3</div>
       <div style="text-align:center">
         <div class="step-label">STEP 3</div>
@@ -533,7 +533,7 @@
       </div>
 
       <div class="card-footer-row">
-        <button class="btn btn-white" onclick="goStep(2)">다음 단계 →</button>
+        <button class="btn btn-white" onclick="uploadAndNext()">다음 단계 →</button>
       </div>
     </div>
 
@@ -549,67 +549,20 @@
 
       <div class="card-footer-row">
         <button class="btn btn-ghost" onclick="goStep(1)">← 수정</button>
-        <button class="btn btn-white" onclick="goStep(3)">생성 시작 →</button>
+        <button class="btn btn-white" onclick="confirmAndGenerate()">생성 시작 →</button>
       </div>
     </div>
 
     <!-- STEP 3: GENERATING -->
-    <div class="step-panel active" id="panel3">
+    <div class="step-panel" id="panel3">
       <div class="generating-area">
 
         <div class="gen-header">
           <div class="gen-title">영상 생성 중...</div>
-          <div class="gen-sub" id="genProgress">4개 중 1개 완료</div>
+          <div class="gen-sub" id="genProgress"></div>
         </div>
 
-        <div class="concept-rows" id="conceptRows">
-          <!-- row 1: done -->
-          <div class="concept-row done">
-            <div class="row-icon done">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="row-name">고유값과 고유벡터 정의</div>
-            <div class="row-right">
-              <span class="badge-done">완료</span>
-            </div>
-          </div>
-
-          <!-- row 2: active -->
-          <div class="concept-row active" id="activeRow">
-            <div class="row-icon active"></div>
-            <div class="row-name">행렬 대각화 과정</div>
-            <div class="row-right">
-              <div class="row-active-content">
-                <div class="status-active">
-                  생성 중...
-                  <div class="active-dots"><span></span><span></span><span></span></div>
-                </div>
-                <div class="progress-track" style="width:140px">
-                  <div class="progress-fill" id="activeProgress" style="width:67%"></div>
-                </div>
-                <div class="progress-pct" id="activePct">67%</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- row 3: pending -->
-          <div class="concept-row pending">
-            <div class="row-icon pending"></div>
-            <div class="row-name">특성다항식 풀이</div>
-            <div class="row-right">
-              <span class="status-pending">대기 중</span>
-            </div>
-          </div>
-
-          <!-- row 4: pending -->
-          <div class="concept-row pending">
-            <div class="row-icon pending"></div>
-            <div class="row-name">기하적 해석</div>
-            <div class="row-right">
-              <span class="status-pending">대기 중</span>
-            </div>
-          </div>
-        </div>
+        <div class="concept-rows" id="conceptRows"></div>
 
         <div class="gen-cta">
           <button class="btn-primary" id="ctaBtn" disabled>
@@ -628,188 +581,48 @@
 
 <script>
   // ── State ───────────────────────────────────────
-  let currentStep = 3;
-
-  const CONCEPTS_DEFAULT = [
-    { name: '고유값과 고유벡터 정의', checked: true },
-    { name: '행렬 대각화 과정',       checked: true },
-    { name: '특성다항식 풀이',         checked: true },
-    { name: '기하적 해석',             checked: true },
-    { name: '직교대각화',              checked: false },
-  ];
+  let packId = null;
+  let jobId = null;
+  let uploadedFile = null;
+  let parsedConcepts = [];   // [{id, title, description, topic_id, params, checked}]
+  let conceptStates = {};    // {id: 'pending'|'active'|'done'|'error'}
+  let _sse = null;
+  let _progressInterval = null;
 
   // ── Navigation ──────────────────────────────────
   function goStep(n) {
-    // hide all panels
     [1,2,3].forEach(i => {
       document.getElementById('panel' + i).classList.remove('active');
       const s = document.getElementById('step' + i);
       s.classList.remove('done', 'active', 'pending');
     });
-
-    // update stepper
     for (let i = 1; i <= 3; i++) {
       const s = document.getElementById('step' + i);
-      if (i < n)      s.classList.add('done');
+      if (i < n) s.classList.add('done');
       else if (i === n) s.classList.add('active');
-      else              s.classList.add('pending');
+      else s.classList.add('pending');
     }
-
-    // update connectors
     document.querySelectorAll('.step-connector').forEach((c, idx) => {
       c.classList.toggle('done', idx + 1 < n);
     });
-
-    // show panel
     document.getElementById('panel' + n).classList.add('active');
-    currentStep = n;
-
     if (n === 2) renderConcepts();
     if (n === 3) startGeneration();
   }
 
-  // ── Step 2: render concept list ─────────────────
-  function renderConcepts() {
-    const list = document.getElementById('conceptList');
-    list.innerHTML = '';
-    CONCEPTS_DEFAULT.forEach((c, i) => {
-      const div = document.createElement('div');
-      div.className = 'concept-item' + (c.checked ? ' checked' : '');
-      div.onclick = () => {
-        c.checked = !c.checked;
-        div.classList.toggle('checked');
-        div.querySelector('.concept-check').innerHTML = c.checked
-          ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`
-          : '';
-      };
-      div.innerHTML = `
-        <div class="concept-check">
-          ${c.checked ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
-        </div>
-        <span class="concept-name">${c.name}</span>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  // ── Step 3: progress simulation ─────────────────
-  let genTimer = null;
-  let genPct = 67;
-  let completedRows = 1;
-  const TOTAL_ROWS = 4;
-
-  function startGeneration() {
-    if (genTimer) return;
-
-    // animate active row progress from 67 → 100, then advance
-    genTimer = setInterval(() => {
-      genPct += Math.random() * 4 + 1;
-      if (genPct >= 100) {
-        genPct = 100;
-        clearInterval(genTimer);
-        genTimer = null;
-        setTimeout(() => advanceRow(), 400);
-      }
-      const pf = document.getElementById('activeProgress');
-      const pp = document.getElementById('activePct');
-      if (pf) pf.style.width = genPct.toFixed(0) + '%';
-      if (pp) pp.textContent = genPct.toFixed(0) + '%';
-    }, 120);
-  }
-
-  function advanceRow() {
-    completedRows++;
-    rebuildRows();
-
-    const prog = document.getElementById('genProgress');
-    if (prog) prog.textContent = `${TOTAL_ROWS}개 중 ${completedRows}개 완료`;
-
-    if (completedRows >= TOTAL_ROWS) {
-      // all done
-      const cta = document.getElementById('ctaBtn');
-      const hint = document.getElementById('ctaHint');
-      if (cta) {
-        cta.disabled = false;
-        cta.classList.add('ready');
-        cta.onclick = () => { window.location.href = '/pack/demo'; };
-      }
-      if (hint) hint.textContent = '강의 팩이 완성되었습니다!';
-      return;
-    }
-
-    // start next row
-    genPct = 0;
-    genTimer = setInterval(() => {
-      genPct += Math.random() * 4 + 1;
-      if (genPct >= 100) {
-        genPct = 100;
-        clearInterval(genTimer);
-        genTimer = null;
-        setTimeout(() => advanceRow(), 400);
-      }
-      const pf = document.getElementById('activeProgress');
-      const pp = document.getElementById('activePct');
-      if (pf) pf.style.width = genPct.toFixed(0) + '%';
-      if (pp) pp.textContent = genPct.toFixed(0) + '%';
-    }, 120);
-  }
-
-  function rebuildRows() {
-    const rows = document.getElementById('conceptRows');
-    if (!rows) return;
-
-    const concepts = [
-      '고유값과 고유벡터 정의',
-      '행렬 대각화 과정',
-      '특성다항식 풀이',
-      '기하적 해석',
-    ];
-
-    rows.innerHTML = concepts.map((name, idx) => {
-      if (idx < completedRows) {
-        return `
-          <div class="concept-row done">
-            <div class="row-icon done">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="row-name">${name}</div>
-            <div class="row-right"><span class="badge-done">완료</span></div>
-          </div>`;
-      } else if (idx === completedRows) {
-        return `
-          <div class="concept-row active" id="activeRow">
-            <div class="row-icon active"></div>
-            <div class="row-name">${name}</div>
-            <div class="row-right">
-              <div class="row-active-content">
-                <div class="status-active">
-                  생성 중...
-                  <div class="active-dots"><span></span><span></span><span></span></div>
-                </div>
-                <div class="progress-track" style="width:140px">
-                  <div class="progress-fill" id="activeProgress" style="width:0%"></div>
-                </div>
-                <div class="progress-pct" id="activePct">0%</div>
-              </div>
-            </div>
-          </div>`;
-      } else {
-        return `
-          <div class="concept-row pending">
-            <div class="row-icon pending"></div>
-            <div class="row-name">${name}</div>
-            <div class="row-right"><span class="status-pending">대기 중</span></div>
-          </div>`;
-      }
-    }).join('');
-  }
-
-  // ── File handling ────────────────────────────────
+  // ── Step 1: file handling ────────────────────────
   function handleFile(file) {
     if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      alert('PDF 파일만 업로드할 수 있어요.');
+      return;
+    }
+    uploadedFile = file;
+    const label = document.querySelector('.upload-label');
+    if (label) label.innerHTML = `<strong>${file.name}</strong> 선택됨`;
     const title = document.getElementById('lectureTitle');
     if (title && !title.value) {
-      title.value = file.name.replace(/\.pdf$/i, '');
+      title.value = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
     }
   }
 
@@ -820,13 +633,178 @@
     if (file) handleFile(file);
   }
 
-  // ── Init step 3 as shown in mockup ──────────────
-  // Already shown by default via CSS .step-panel.active on panel3
-  // and stepper state set in HTML.
-  // Auto-start the generation simulation
-  window.addEventListener('DOMContentLoaded', () => {
-    startGeneration();
-  });
+  async function uploadAndNext() {
+    if (!uploadedFile) { alert('PDF 파일을 선택해주세요.'); return; }
+    const btn = document.querySelector('#panel1 .btn-white');
+    btn.disabled = true;
+    btn.textContent = 'AI 분석 중...';
+    try {
+      const fd = new FormData();
+      fd.append('file', uploadedFile);
+      const res = await fetch('/api/create/upload', { method: 'POST', body: fd });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.detail || '업로드 실패'); }
+      const data = await res.json();
+      packId = data.pack_id;
+      const titleEl = document.getElementById('lectureTitle');
+      if (!titleEl.value) titleEl.value = data.lecture_title || '';
+      parsedConcepts = (data.concepts || []).map(c => ({ ...c, checked: true }));
+      goStep(2);
+    } catch (e) {
+      alert(`오류: ${e.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '다음 단계 →';
+    }
+  }
+
+  // ── Step 2: concept list ─────────────────────────
+  function checkSvg() {
+    return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+  }
+
+  function renderConcepts() {
+    const list = document.getElementById('conceptList');
+    list.innerHTML = '';
+    if (!parsedConcepts.length) {
+      list.innerHTML = '<p style="color:var(--muted2);padding:16px 4px">추출된 개념이 없어요.</p>';
+      return;
+    }
+    parsedConcepts.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'concept-item' + (c.checked ? ' checked' : '');
+      div.onclick = () => {
+        c.checked = !c.checked;
+        div.classList.toggle('checked');
+        div.querySelector('.concept-check').innerHTML = c.checked ? checkSvg() : '';
+      };
+      div.innerHTML = `
+        <div class="concept-check">${c.checked ? checkSvg() : ''}</div>
+        <span class="concept-name">${c.title}</span>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  async function confirmAndGenerate() {
+    const selected = parsedConcepts.filter(c => c.checked);
+    if (!selected.length) { alert('최소 1개 이상의 개념을 선택해주세요.'); return; }
+    const btn = document.querySelector('#panel2 .btn-white');
+    btn.disabled = true;
+    btn.textContent = '준비 중...';
+    try {
+      const title = document.getElementById('lectureTitle').value.trim() || '강의 팩';
+      const res = await fetch('/api/create/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pack_id: packId, title, source_file: uploadedFile?.name || '', concepts: selected }),
+      });
+      if (!res.ok) throw new Error('생성 시작 실패');
+      const data = await res.json();
+      jobId = data.job_id;
+      parsedConcepts = selected;
+      parsedConcepts.forEach(c => { conceptStates[c.id] = 'pending'; });
+      goStep(3);
+    } catch (e) {
+      alert(`오류: ${e.message}`);
+      btn.disabled = false;
+      btn.textContent = '생성 시작 →';
+    }
+  }
+
+  // ── Step 3: SSE progress ─────────────────────────
+  function startGeneration() {
+    if (!jobId || _sse) return;
+    rebuildRows();
+    _sse = new EventSource(`/api/create/progress/${jobId}`);
+    _sse.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'progress') {
+        Object.keys(conceptStates).forEach(id => { if (conceptStates[id] === 'active') conceptStates[id] = 'pending'; });
+        conceptStates[msg.concept_id] = 'active';
+        setProgressLabel(msg.index, msg.total);
+        rebuildRows();
+      } else if (msg.type === 'done') {
+        conceptStates[msg.concept_id] = 'done';
+        const c = parsedConcepts.find(x => x.id === msg.concept_id);
+        if (c) c.video_url = msg.video_url;
+        setProgressLabel(msg.index, msg.total);
+        rebuildRows();
+      } else if (msg.type === 'error') {
+        conceptStates[msg.concept_id] = 'error';
+        rebuildRows();
+      } else if (msg.type === 'complete') {
+        _sse.close(); _sse = null;
+        clearInterval(_progressInterval);
+        onAllComplete();
+      }
+    };
+    _sse.onerror = () => { if (_sse) { _sse.close(); _sse = null; } };
+  }
+
+  function setProgressLabel(index, total) {
+    const el = document.getElementById('genProgress');
+    if (el) el.textContent = `${total}개 중 ${index}개 완료`;
+  }
+
+  function onAllComplete() {
+    const cta = document.getElementById('ctaBtn');
+    const hint = document.getElementById('ctaHint');
+    if (cta) {
+      cta.disabled = false;
+      cta.classList.add('ready');
+      cta.onclick = () => { window.location.href = `/pack.html?id=${packId}`; };
+    }
+    if (hint) hint.textContent = '강의 팩이 완성되었습니다!';
+  }
+
+  function rebuildRows() {
+    const rows = document.getElementById('conceptRows');
+    if (!rows) return;
+    clearInterval(_progressInterval);
+    rows.innerHTML = parsedConcepts.map(c => {
+      const st = conceptStates[c.id] || 'pending';
+      if (st === 'done') return `
+        <div class="concept-row done">
+          <div class="row-icon done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="row-name">${c.title}</div>
+          <div class="row-right"><span class="badge-done">완료</span></div>
+        </div>`;
+      if (st === 'active') return `
+        <div class="concept-row active">
+          <div class="row-icon active"></div>
+          <div class="row-name">${c.title}</div>
+          <div class="row-right">
+            <div class="row-active-content">
+              <div class="status-active">생성 중...<div class="active-dots"><span></span><span></span><span></span></div></div>
+              <div class="progress-track" style="width:140px"><div class="progress-fill" id="activeProgress" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>`;
+      if (st === 'error') return `
+        <div class="concept-row pending">
+          <div class="row-icon pending" style="border-color:rgba(255,80,80,0.4)"></div>
+          <div class="row-name" style="color:var(--muted)">${c.title}</div>
+          <div class="row-right"><span class="status-pending" style="color:rgba(255,80,80,0.5)">생성 실패</span></div>
+        </div>`;
+      return `
+        <div class="concept-row pending">
+          <div class="row-icon pending"></div>
+          <div class="row-name">${c.title}</div>
+          <div class="row-right"><span class="status-pending">대기 중</span></div>
+        </div>`;
+    }).join('');
+
+    const fill = document.getElementById('activeProgress');
+    if (fill) {
+      let pct = 0;
+      _progressInterval = setInterval(() => {
+        pct = Math.min(pct + Math.random() * 2.5 + 0.5, 90);
+        fill.style.width = pct.toFixed(0) + '%';
+      }, 250);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => goStep(1));
 </script>
 </body>
 </html>
