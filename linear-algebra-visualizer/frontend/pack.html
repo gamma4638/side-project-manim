@@ -732,7 +732,7 @@
   </div><!-- /video-grid -->
 
   <!-- EXPANDED PANEL -->
-  <div class="expanded-panel open" id="expandedPanel">
+  <div class="expanded-panel" id="expandedPanel">
     <div class="expanded-video">
       <div class="video-placeholder" id="videoPlaceholder">
         <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
@@ -771,7 +771,7 @@
         <button class="ctrl-btn" title="음량">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
         </button>
-        <span class="time-label">00:00 / 08:24</span>
+        <span class="time-label">00:00 / --:--</span>
         <div class="progress-bar"><div class="progress-fill"></div></div>
         <button class="speed-btn">1x</button>
         <button class="ctrl-btn" title="자막">
@@ -831,135 +831,288 @@
     </div>
 
     <div class="qa-grid" id="qaGrid">
-
-      <!-- QA Card 1 -->
-      <div class="qa-card">
-        <div class="qa-thumb">
-          <svg viewBox="0 0 280 158" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="158" fill="#050608"/>
-            <!-- complex plane -->
-            <line x1="40" y1="79" x2="240" y2="79" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-            <line x1="140" y1="15" x2="140" y2="143" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="242" y="83">Re</text>
-            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="143" y="18">Im</text>
-            <!-- complex eigenvalues -->
-            <circle cx="190" cy="45" r="3" fill="rgba(255,255,255,0.7)"/>
-            <circle cx="90" cy="113" r="3" fill="rgba(255,255,255,0.7)"/>
-            <!-- conjugate line -->
-            <line x1="140" y1="79" x2="190" y2="45" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-dasharray="3,2"/>
-            <line x1="140" y1="79" x2="90" y2="113" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-dasharray="3,2"/>
-            <!-- circle -->
-            <circle cx="140" cy="79" r="55" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-            <text fill="rgba(255,255,255,0.5)" font-size="8" font-family="JetBrains Mono,monospace" x="193" y="42">λ = a+bi</text>
-            <text fill="rgba(255,255,255,0.5)" font-size="8" font-family="JetBrains Mono,monospace" x="62" y="128">λ = a−bi</text>
-          </svg>
-          <div class="play-btn" style="width:34px;height:34px">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>
-        </div>
-        <div class="qa-body">
-          <div class="qa-num">01</div>
-          <div class="qa-title">복소수 고유값의 의미</div>
-          <div class="qa-desc">복소수 고유값이 나타내는 회전과 스케일 변화의 의미를 설명합니다</div>
-        </div>
-        <div class="qa-footer">
-          <span class="duration">09:15</span>
-          <span class="badge-done">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            완료
-          </span>
-        </div>
-      </div>
-
-      <!-- QA Card 2 -->
-      <div class="qa-card">
-        <div class="qa-thumb">
-          <svg viewBox="0 0 280 158" xmlns="http://www.w3.org/2000/svg">
-            <rect width="280" height="158" fill="#050608"/>
-            <line x1="40" y1="79" x2="240" y2="79" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-            <line x1="140" y1="15" x2="140" y2="143" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="242" y="83">x</text>
-            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="143" y="18">y</text>
-            <!-- stretched vectors -->
-            <line x1="140" y1="79" x2="210" y2="50" stroke="rgba(255,255,255,0.65)" stroke-width="2" marker-end="url(#qArr1)"/>
-            <line x1="140" y1="79" x2="195" y2="35" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#qArr2)"/>
-            <line x1="140" y1="79" x2="80" y2="120" stroke="rgba(255,255,255,0.5)" stroke-width="2" marker-end="url(#qArr3)"/>
-            <text fill="rgba(255,255,255,0.5)" font-size="8" font-family="JetBrains Mono,monospace" x="30" y="30">A</text>
-            <text fill="rgba(255,255,255,0.5)" font-size="9" font-family="JetBrains Mono,monospace" x="50" y="145">기하적 해석</text>
-            <defs>
-              <marker id="qArr1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.65)"/></marker>
-              <marker id="qArr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.35)"/></marker>
-              <marker id="qArr3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.5)"/></marker>
-            </defs>
-          </svg>
-          <div class="play-btn" style="width:34px;height:34px">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>
-        </div>
-        <div class="qa-body">
-          <div class="qa-num">02</div>
-          <div class="qa-title">기하적 해석</div>
-          <div class="qa-desc">고유벡터 방향과 선형변환의 기하학적 의미를 다양한 예제로 살펴봅니다</div>
-        </div>
-        <div class="qa-footer">
-          <span class="duration">07:48</span>
-          <span class="badge-done">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            완료
-          </span>
-        </div>
-      </div>
-
-      <!-- QA Card 3 (loading) -->
-      <div class="qa-card loading" id="loadingCard">
-        <div class="loading-thumb">
-          <div class="spinner"></div>
-          <div class="loading-text">생성 중...</div>
-          <div class="loading-bar"><div class="loading-fill"></div></div>
-          <div class="loading-dots"><span></span><span></span><span></span></div>
-        </div>
-        <div class="qa-body">
-          <div class="qa-num">03</div>
-          <div class="qa-title" style="color:var(--muted)">시각화 영상을 생성하고 있어요</div>
-        </div>
-      </div>
-
     </div>
   </div>
 
 </main>
 
 <script>
-  const CARDS = [
-    {
-      title: '1. 고유값과 고유벡터 정의',
-      desc: '고유값(eigenvalue)은 선형변환 Av = λv 에서...\n\n0이 아닌 벡터 v가 선형변환 A에 의해 방향은 그대로이고 크기만 λ배로 변할 때의 스칼라 λ를 고유값이라 하고, 이때의 벡터 v를 고유벡터라고 합니다.\n\n이 영상에서는 정의를 기하학적으로 해석하고, 기본 성질들을 직관적으로 살펴봅니다.',
-      tags: ['선형대수', '고유값', '고유벡터', '정의']
-    },
-    {
-      title: '2. 행렬 대각화 과정',
-      desc: '행렬 대각화(diagonalization)는 행렬 A를 PDP⁻¹ 형태로 분해하는 과정입니다.\n\nP는 고유벡터들로 이루어진 행렬이고, D는 고유값들이 대각에 놓인 대각행렬입니다. 대각화가 가능한 조건과 그 기하학적 의미를 살펴봅니다.',
-      tags: ['대각화', 'PDP⁻¹', '고유공간', '분해']
-    },
-    {
-      title: '3. 특성다항식',
-      desc: '특성다항식 p(λ) = det(A − λI)는 행렬 A의 고유값을 구하는 핵심 도구입니다.\n\np(λ) = 0 을 만족하는 λ가 바로 고유값이며, 이 다항식의 차수는 행렬의 크기와 같습니다. 그래프로 고유값의 위치를 직관적으로 파악하는 방법을 배웁니다.',
-      tags: ['특성다항식', '행렬식', '고유값', '방정식']
-    }
+  // ── State ────────────────────────────────────────
+  let PACK_ID = null;
+  let PACK_DATA = null;
+  let activeIdx = -1;
+  let activeQAIdx = -1;
+  let _video = null;       // currently active <video> element
+  let _videoAbort = null;  // AbortController for video event listeners
+  let _speedIdx = 0;
+  const SPEEDS = [1, 1.5, 2, 0.5];
+  let QA_CARDS = [];
+
+  // Demo data (shown when no ?id= param)
+  let CARDS = [
+    { title: '1. 고유값과 고유벡터 정의', desc: '고유값(eigenvalue)은 선형변환 Av = λv 에서...\n\n0이 아닌 벡터 v가 선형변환 A에 의해 방향은 그대로이고 크기만 λ배로 변할 때의 스칼라 λ를 고유값이라 하고, 이때의 벡터 v를 고유벡터라고 합니다.', tags: ['선형대수', '고유값', '고유벡터'], video_url: null },
+    { title: '2. 행렬 대각화 과정', desc: '행렬 대각화(diagonalization)는 행렬 A를 PDP⁻¹ 형태로 분해하는 과정입니다.\n\nP는 고유벡터들로 이루어진 행렬이고, D는 고유값들이 대각에 놓인 대각행렬입니다.', tags: ['대각화', 'PDP⁻¹', '고유공간'], video_url: null },
+    { title: '3. 특성다항식', desc: '특성다항식 p(λ) = det(A − λI)는 행렬 A의 고유값을 구하는 핵심 도구입니다.\n\np(λ) = 0 을 만족하는 λ가 바로 고유값입니다.', tags: ['특성다항식', '행렬식', '고유값'], video_url: null },
   ];
 
-  let activeIdx = 0;
+  // ── Helpers ──────────────────────────────────────
+  function fmtTime(s) {
+    if (!s || isNaN(s) || !isFinite(s)) return '00:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
 
+  function updatePlayIcon(playing) {
+    const btn = document.querySelector('.video-controls-bar .ctrl-btn[title="재생"]');
+    if (!btn) return;
+    btn.innerHTML = playing
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>`;
+  }
+
+  // ── Controls wiring (called once on load) ────────
+  function setupControls() {
+    const bar = document.querySelector('.video-controls-bar');
+    if (!bar) return;
+
+    bar.querySelector('.ctrl-btn[title="재생"]')?.addEventListener('click', () => {
+      if (!_video) return;
+      _video.paused ? _video.play() : _video.pause();
+    });
+
+    bar.querySelector('.ctrl-btn[title="10초 전"]')?.addEventListener('click', () => {
+      if (_video) _video.currentTime = Math.max(0, _video.currentTime - 10);
+    });
+
+    bar.querySelector('.ctrl-btn[title="10초 후"]')?.addEventListener('click', () => {
+      if (_video) _video.currentTime = Math.min(_video.duration || 0, _video.currentTime + 10);
+    });
+
+    bar.querySelector('.ctrl-btn[title="음량"]')?.addEventListener('click', () => {
+      if (_video) _video.muted = !_video.muted;
+    });
+
+    bar.querySelector('.speed-btn')?.addEventListener('click', () => {
+      if (!_video) return;
+      _speedIdx = (_speedIdx + 1) % SPEEDS.length;
+      _video.playbackRate = SPEEDS[_speedIdx];
+      bar.querySelector('.speed-btn').textContent = `${SPEEDS[_speedIdx]}x`;
+    });
+
+    bar.querySelector('.progress-bar')?.addEventListener('click', (e) => {
+      if (!_video || !_video.duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      _video.currentTime = ((e.clientX - rect.left) / rect.width) * _video.duration;
+    });
+
+    bar.querySelector('.ctrl-btn[title="전체화면"]')?.addEventListener('click', () => {
+      _video?.requestFullscreen?.();
+    });
+  }
+
+  // ── Sync controls UI to a new video element ──────
+  function syncControls(video) {
+    if (_videoAbort) _videoAbort.abort();
+    _videoAbort = new AbortController();
+    const { signal } = _videoAbort;
+
+    const bar = document.querySelector('.video-controls-bar');
+    if (!bar) return;
+
+    const fill = bar.querySelector('.progress-fill');
+    const timeLabel = bar.querySelector('.time-label');
+    const speedBtn = bar.querySelector('.speed-btn');
+
+    // reset UI
+    if (fill) fill.style.width = '0%';
+    if (timeLabel) timeLabel.textContent = '00:00 / --:--';
+    if (speedBtn) speedBtn.textContent = '1x';
+    _speedIdx = 0;
+    updatePlayIcon(false);
+
+    video.addEventListener('timeupdate', () => {
+      if (fill && video.duration) fill.style.width = `${(video.currentTime / video.duration) * 100}%`;
+      if (timeLabel) timeLabel.textContent = `${fmtTime(video.currentTime)} / ${fmtTime(video.duration)}`;
+    }, { signal });
+
+    video.addEventListener('play',  () => updatePlayIcon(true),  { signal });
+    video.addEventListener('pause', () => updatePlayIcon(false), { signal });
+    video.addEventListener('ended', () => updatePlayIcon(false), { signal });
+  }
+
+  // ── On load ──────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', async () => {
+    setupControls();
+
+    document.getElementById('qaGrid').addEventListener('click', e => {
+      if (e.target.closest('.qa-card.loading')) return;
+      const card = e.target.closest('.qa-card');
+      if (!card) return;
+      const idx = parseInt(card.dataset.qaIdx);
+      if (!isNaN(idx)) toggleQA(card, idx);
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    PACK_ID = params.get('id');
+    if (PACK_ID) await loadPack(PACK_ID);
+  });
+
+  async function loadPack(id) {
+    try {
+      const res = await fetch(`/api/pack/${id}`);
+      if (!res.ok) throw new Error('팩을 찾을 수 없어요.');
+      PACK_DATA = await res.json();
+      CARDS = (PACK_DATA.concepts || []).map((c, i) => ({
+        title: `${i + 1}. ${c.title}`,
+        desc: c.description || '',
+        tags: [c.topic_id],
+        video_url: c.video_url || null,
+      }));
+      renderPackPage(PACK_DATA);
+    } catch (e) {
+      console.error('loadPack:', e);
+    }
+  }
+
+  function renderPackPage(pack) {
+    const ht = document.querySelector('.header-title');
+    if (ht) ht.textContent = pack.title;
+
+    const conceptCount = (pack.concepts || []).length;
+    const qaCount = (pack.qa_archive || []).length;
+    const meta = document.querySelector('.meta-bar');
+    if (meta) meta.innerHTML = `
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> 핵심 개념 ${conceptCount}개</span>
+      <span style="color:rgba(255,255,255,0.12)">•</span>
+      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 학생 질문 ${qaCount}개</span>`;
+
+    const sCount = document.querySelector('.section-header .count');
+    if (sCount) sCount.textContent = `${conceptCount}개`;
+
+    const grid = document.querySelector('.video-grid');
+    if (grid && conceptCount) grid.innerHTML = pack.concepts.map((c, i) => conceptCardHtml(c, i)).join('');
+
+    const qaGrid = document.getElementById('qaGrid');
+    const qaCountEl = document.getElementById('qaCount');
+    if (qaGrid) {
+      qaGrid.innerHTML = (pack.qa_archive || []).map((qa, i) => qaCardHtml(qa, i)).join('');
+      if (qaCountEl) qaCountEl.textContent = `${qaCount}개`;
+    }
+
+    // close expanded panel when we reload
+    document.getElementById('expandedPanel')?.classList.remove('open');
+  }
+
+  function conceptCardHtml(c, idx) {
+    return `
+      <div class="video-card" onclick="toggleCard(this, ${idx})">
+        <div class="card-thumb">
+          ${thumbSvg(c.topic_id)}
+          <div class="play-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg></div>
+        </div>
+        <div class="card-body">
+          <div class="card-num">${String(idx+1).padStart(2,'0')}</div>
+          <div class="card-title">${c.title}</div>
+          <div class="card-desc">${c.description || ''}</div>
+        </div>
+        <div class="card-footer">
+          <span class="duration">${c.video_url ? '▶ 재생 가능' : '생성 중...'}</span>
+        </div>
+      </div>`;
+  }
+
+  function qaCardHtml(qa, idx) {
+    QA_CARDS[idx] = qa;
+    return `
+      <div class="qa-card" data-qa-idx="${idx}" style="cursor:pointer">
+        <div class="qa-thumb" style="position:relative;background:#050608;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center">
+          ${thumbSvg(qa.topic_id || 'eigenvalue')}
+          <div class="play-btn" style="position:absolute;width:34px;height:34px"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg></div>
+        </div>
+        <div class="qa-body">
+          <div class="qa-num">${String(idx+1).padStart(2,'0')}</div>
+          <div class="qa-title">${qa.question.length > 24 ? qa.question.slice(0,24)+'…' : qa.question}</div>
+          <div class="qa-desc">${qa.description || ''}</div>
+        </div>
+        <div class="qa-footer">
+          <span class="duration">▶ 재생</span>
+          <span class="badge-done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 완료</span>
+        </div>
+      </div>`;
+  }
+
+  function thumbSvg(topicId) {
+    const base = `<rect width="320" height="180" fill="#050608"/><g stroke="rgba(255,255,255,0.04)" stroke-width="0.5"><line x1="80" y1="0" x2="80" y2="180"/><line x1="160" y1="0" x2="160" y2="180"/><line x1="240" y1="0" x2="240" y2="180"/><line x1="0" y1="60" x2="320" y2="60"/><line x1="0" y1="120" x2="320" y2="120"/></g>`;
+    const topics = {
+      fourier: `<line x1="30" y1="90" x2="290" y2="90" stroke="rgba(255,255,255,0.18)" stroke-width="0.7"/><path d="M 30,90 Q 60,36 90,90 Q 120,144 150,90 Q 180,36 210,90 Q 240,144 270,90" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/><text fill="rgba(255,255,255,0.5)" font-size="10" font-family="JetBrains Mono,monospace" x="30" y="26">Fourier</text>`,
+      derivative: `<line x1="30" y1="120" x2="290" y2="120" stroke="rgba(255,255,255,0.18)" stroke-width="0.7"/><path d="M 50,150 Q 100,130 150,90 Q 200,50 260,20" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/><line x1="100" y1="160" x2="220" y2="40" stroke="rgba(255,255,255,0.65)" stroke-width="1.3"/><circle cx="160" cy="87" r="4" fill="rgba(255,255,255,0.7)"/><text fill="rgba(255,255,255,0.5)" font-size="10" font-family="JetBrains Mono,monospace" x="30" y="26">f'(x)</text>`,
+      clt: `<line x1="30" y1="150" x2="290" y2="150" stroke="rgba(255,255,255,0.18)" stroke-width="0.7"/><rect x="60" y="120" width="22" height="30" fill="rgba(255,255,255,0.25)"/><rect x="90" y="90" width="22" height="60" fill="rgba(255,255,255,0.4)"/><rect x="120" y="60" width="22" height="90" fill="rgba(255,255,255,0.55)"/><rect x="150" y="40" width="22" height="110" fill="rgba(255,255,255,0.65)"/><rect x="180" y="60" width="22" height="90" fill="rgba(255,255,255,0.55)"/><rect x="210" y="90" width="22" height="60" fill="rgba(255,255,255,0.4)"/><rect x="240" y="120" width="22" height="30" fill="rgba(255,255,255,0.25)"/>`,
+      taylor_series: `<line x1="30" y1="90" x2="290" y2="90" stroke="rgba(255,255,255,0.18)" stroke-width="0.7"/><path d="M 30,90 Q 80,10 130,90 Q 180,170 230,90 Q 260,40 290,90" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="4,2"/><path d="M 30,90 Q 70,30 160,88 Q 220,130 290,60" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/><text fill="rgba(255,255,255,0.5)" font-size="10" font-family="JetBrains Mono,monospace" x="30" y="26">Taylor</text>`,
+    };
+    const inner = topics[topicId] || `<line x1="160" y1="10" x2="160" y2="170" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/><line x1="30" y1="90" x2="290" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/><line x1="160" y1="90" x2="220" y2="55" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" marker-end="url(#sv1)"/><line x1="160" y1="90" x2="100" y2="130" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" marker-end="url(#sv2)"/><text fill="rgba(255,255,255,0.5)" font-size="10" font-family="JetBrains Mono,monospace" x="34" y="28">Av=λv</text><defs><marker id="sv1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.7)"/></marker><marker id="sv2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.45)"/></marker></defs>`;
+    return `<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">${base}${inner}</svg>`;
+  }
+
+  // ── QA card toggle ───────────────────────────────
+  function toggleQA(card, idx) {
+    const panel = document.getElementById('expandedPanel');
+    if (activeQAIdx === idx && panel.classList.contains('open')) {
+      panel.classList.remove('open');
+      card.classList.remove('active');
+      activeQAIdx = -1;
+      if (_video) _video.pause();
+      return;
+    }
+    document.querySelectorAll('.video-card').forEach(c => c.classList.remove('active'));
+    activeIdx = -1;
+    if (_video) _video.pause();
+
+    document.querySelectorAll('.qa-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    activeQAIdx = idx;
+
+    const qa = QA_CARDS[idx];
+    if (!qa) return;
+
+    document.getElementById('expandedTitle').textContent = qa.question;
+    document.getElementById('expandedDesc').innerHTML = (qa.description || '').replace(/\n\n/g, '<br><br>');
+    document.getElementById('expandedTags').innerHTML = '';
+
+    const videoArea = document.querySelector('.expanded-video');
+    if (qa.video_url && videoArea) {
+      const video = document.createElement('video');
+      video.className = 'video-placeholder';
+      video.src = qa.video_url;
+      video.style.cssText = 'width:100%;aspect-ratio:16/9;display:block;background:#000';
+      const old = videoArea.querySelector('.video-placeholder');
+      if (old) old.replaceWith(video);
+      else videoArea.prepend(video);
+      _video = video;
+      syncControls(video);
+      video.play().catch(() => {});
+    }
+
+    panel.classList.remove('open');
+    setTimeout(() => panel.classList.add('open'), 10);
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+
+  // ── Card toggle ──────────────────────────────────
   function toggleCard(el, idx) {
     const cards = document.querySelectorAll('.video-card');
     const panel = document.getElementById('expandedPanel');
+    document.querySelectorAll('.qa-card').forEach(c => c.classList.remove('active'));
+    activeQAIdx = -1;
 
     if (activeIdx === idx && panel.classList.contains('open')) {
       panel.classList.remove('open');
       el.classList.remove('active');
       activeIdx = -1;
+      if (_video) { _video.pause(); }
       return;
     }
+    if (_video) { _video.pause(); }
 
     cards.forEach(c => c.classList.remove('active'));
     el.classList.add('active');
@@ -967,20 +1120,32 @@
 
     const data = CARDS[idx];
     document.getElementById('expandedTitle').textContent = data.title;
+    document.getElementById('expandedDesc').innerHTML = (data.desc || '').replace(/\n\n/g, '<br><br>');
+    document.getElementById('expandedTags').innerHTML = (data.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
 
-    const descEl = document.getElementById('expandedDesc');
-    descEl.innerHTML = data.desc.replace(/\n\n/g, '<br><br>');
+    const videoArea = document.querySelector('.expanded-video');
+    if (data.video_url && videoArea) {
+      // Create video element via createElement to keep a proper reference
+      const video = document.createElement('video');
+      video.className = 'video-placeholder';
+      video.src = data.video_url;
+      video.style.cssText = 'width:100%;aspect-ratio:16/9;display:block;background:#000';
 
-    const tagsEl = document.getElementById('expandedTags');
-    tagsEl.innerHTML = data.tags.map(t => `<span class="tag">${t}</span>`).join('');
+      const old = videoArea.querySelector('.video-placeholder');
+      if (old) old.replaceWith(video);
+      else videoArea.prepend(video);
+
+      _video = video;
+      syncControls(video);
+      video.play().catch(() => {});
+    }
 
     panel.classList.remove('open');
     setTimeout(() => panel.classList.add('open'), 10);
-
-    // scroll into view
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
 
+  // ── URL copy ─────────────────────────────────────
   function copyUrl() {
     navigator.clipboard.writeText(window.location.href).catch(() => {});
     const btn = document.getElementById('copyBtn');
@@ -992,34 +1157,53 @@
     }, 2000);
   }
 
-  function handlePromptKey(e) {
-    if (e.key === 'Enter') submitQuestion();
-  }
+  // ── Student question ─────────────────────────────
+  function handlePromptKey(e) { if (e.key === 'Enter') submitQuestion(); }
 
-  function submitQuestion() {
+  async function submitQuestion() {
     const input = document.getElementById('studentPrompt');
-    const q = input.value.trim();
-    if (!q) return;
+    const question = input.value.trim();
+    if (!question) return;
 
     const btn = document.getElementById('generateBtn');
     btn.disabled = true;
     input.disabled = true;
     input.value = '';
 
-    addLoadingCard(q);
+    const idx = QA_CARDS.length;
+    const loadingCard = addLoadingCard(question);
 
-    // Simulate completion after 3s (replace with real API call)
-    setTimeout(() => {
+    try {
+      if (!PACK_ID) throw new Error('데모 모드에서는 질문 기능을 사용할 수 없어요. 먼저 강의 팩을 생성해주세요.');
+      const res = await fetch(`/api/pack/${PACK_ID}/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.detail || '영상 생성 실패'); }
+      const qa = await res.json();
+
+      const grid = document.getElementById('qaGrid');
+      const tmp = document.createElement('template');
+      tmp.innerHTML = qaCardHtml(qa, idx);
+      loadingCard.replaceWith(tmp.content.firstElementChild);
+
+      const qc = document.getElementById('qaCount');
+      if (qc) qc.textContent = `${grid.querySelectorAll('.qa-card').length}개`;
+    } catch (e) {
+      loadingCard.remove();
+      const qc = document.getElementById('qaCount');
+      if (qc) { const n = parseInt(qc.textContent) || 0; qc.textContent = `${Math.max(0, n-1)}개`; }
+      alert(`오류: ${e.message}`);
+    } finally {
       btn.disabled = false;
       input.disabled = false;
       input.focus();
-    }, 3000);
+    }
   }
 
   function addLoadingCard(question) {
     const grid = document.getElementById('qaGrid');
-    const count = grid.querySelectorAll('.qa-card:not(.template)').length + 1;
-
     const card = document.createElement('div');
     card.className = 'qa-card loading';
     card.innerHTML = `
@@ -1030,16 +1214,13 @@
         <div class="loading-dots"><span></span><span></span><span></span></div>
       </div>
       <div class="qa-body">
-        <div class="qa-num">0${count}</div>
-        <div class="qa-title" style="color:var(--muted)">${question.length > 22 ? question.slice(0, 22) + '…' : question}</div>
-      </div>
-    `;
+        <div class="qa-title" style="color:var(--muted)">${question.length > 22 ? question.slice(0,22)+'…' : question}</div>
+      </div>`;
     grid.appendChild(card);
-
-    const countEl = document.getElementById('qaCount');
-    countEl.textContent = count + '개';
-
+    const qc = document.getElementById('qaCount');
+    if (qc) { const n = parseInt(qc.textContent) || 0; qc.textContent = `${n+1}개`; }
     card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return card;
   }
 </script>
 </body>

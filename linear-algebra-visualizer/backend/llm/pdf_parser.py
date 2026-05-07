@@ -63,7 +63,7 @@ def extract_concepts_from_pdf(pdf_path: Path) -> Dict[str, Any]:
 
     client = genai.Client(api_key=api_key)
 
-    uploaded = client.files.upload(path=str(pdf_path))
+    uploaded = client.files.upload(file=str(pdf_path))
 
     last_exc: Exception = RuntimeError("no attempts made")
     for attempt in range(3):

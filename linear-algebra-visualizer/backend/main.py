@@ -318,6 +318,29 @@ async def create_progress(job_id: str):
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
+@app.get("/api/packs")
+async def list_packs():
+    """List all packs ordered by creation date (newest first)."""
+    packs = []
+    for pack_json in PACKS_DIR.glob("*/pack.json"):
+        try:
+            data = json.loads(pack_json.read_text())
+            concepts = data.get("concepts", [])
+            packs.append({
+                "id": data.get("id"),
+                "title": data.get("title", "무제"),
+                "created_at": data.get("created_at"),
+                "status": data.get("status"),
+                "concept_count": len(concepts),
+                "qa_count": len(data.get("qa_archive", [])),
+                "topics": [c.get("topic_id") for c in concepts[:4]],
+            })
+        except Exception:
+            continue
+    packs.sort(key=lambda p: p.get("created_at") or "", reverse=True)
+    return packs
+
+
 @app.get("/api/pack/{pack_id}")
 async def get_pack(pack_id: str):
     """Return pack metadata + video list."""

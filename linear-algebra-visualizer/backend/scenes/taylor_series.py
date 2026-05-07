@@ -4,8 +4,8 @@ import os
 import numpy as np
 from manim import *
 
-BG = "#0c1b33"
-TEXT = "#ece6e2"
+BG = BLACK
+TEXT = WHITE
 FUNC_COLOR = "#58c4dd"
 APPROX_COLORS = ["#ffff00", "#fc6255", "#83c167", "#9a72ac", "#5cd0b3", "#ff8c00", "#ff69b4"]
 
