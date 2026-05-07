@@ -1,14 +1,6 @@
 """
 Eigenvalue/Eigenvector Visualization Scene
 3Blue1Brown style using ManimCE
-
-Color palette from 3B1B:
-- Background: #0c1b33 (dark blue)
-- î-hat (basis): #83c167 (green)
-- ĵ-hat (basis): #fc6255 (red)
-- Eigenvector 1: #ffff00 (yellow)
-- Eigenvector 2: #58c4dd (blue)
-- Text: #ece6e2 (cream)
 """
 
 import json
@@ -16,16 +8,16 @@ import os
 import numpy as np
 from manim import *
 
-# 3B1B Color Palette
-BACKGROUND_COLOR = "#0c1b33"
-I_HAT_COLOR = "#83c167"      # Green - î basis vector
-J_HAT_COLOR = "#fc6255"      # Red - ĵ basis vector
-EIGEN_COLOR_1 = "#ffff00"    # Yellow - eigenvector 1
-EIGEN_COLOR_2 = "#58c4dd"    # Blue - eigenvector 2
-TEXT_COLOR = "#ece6e2"       # Cream text
-GRID_COLOR = "#4a5568"       # Subtle grid
-TEAL = "#5cd0b3"
-PURPLE = "#9a72ac"
+# 3B1B Color Palette (ManimCE constants)
+BACKGROUND_COLOR = BLACK      # #000000
+I_HAT_COLOR = GREEN_C         # #83C167 - î basis vector
+J_HAT_COLOR = RED_C           # #FC6255 - ĵ basis vector
+EIGEN_COLOR_1 = YELLOW_C      # #F7D96F - eigenvector 1
+EIGEN_COLOR_2 = BLUE_C        # #58C4DD - eigenvector 2
+TEXT_COLOR = WHITE             # #FFFFFF
+GRID_COLOR = BLUE_E            # #236B8E - subtle grid
+TEAL = TEAL_C                  # #5CD0B3
+PURPLE = PURPLE_C              # #9A72AC
 
 
 class EigenvalueScene(Scene):

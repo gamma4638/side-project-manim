@@ -4,8 +4,8 @@ import os
 import numpy as np
 from manim import *
 
-BG = "#0c1b33"
-TEXT = "#ece6e2"
+BG = BLACK
+TEXT = WHITE
 FUNC_COLOR = "#58c4dd"
 TANGENT_COLOR = "#fc6255"
 POINT_COLOR = "#ffff00"

@@ -6,8 +6,8 @@ import numpy as np
 from manim import *
 from scipy.special import erfinv as _erfinv
 
-BG = "#0c1b33"
-TEXT = "#ece6e2"
+BG = BLACK
+TEXT = WHITE
 DIST_COLOR = "#58c4dd"
 REJECT_COLOR = "#fc6255"
 ACCEPT_COLOR = "#83c167"

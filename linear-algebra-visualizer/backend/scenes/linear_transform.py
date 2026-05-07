@@ -4,11 +4,11 @@ import os
 import numpy as np
 from manim import *
 
-BG = "#0c1b33"
+BG = BLACK
 I_COLOR = "#83c167"
 J_COLOR = "#fc6255"
-TEXT = "#ece6e2"
-GRID = "#4a5568"
+TEXT = WHITE
+GRID = BLUE_E
 
 
 class LinearTransformScene(Scene):

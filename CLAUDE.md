@@ -36,16 +36,19 @@ Python manim(ManimCE)을 사용하여 **정확한 3Blue1Brown 스타일**의 선
 
 ## 3B1B 색상 팔레트 (필수 참조)
 
+항상 hex 문자열 대신 ManimCE 상수를 사용할 것.
+
 ```python
-# ManimCE 색상 상수
-BACKGROUND = "#0c1b33"      # 또는 config.background_color
-GREEN = "#83c167"           # î-hat 기저벡터
-RED = "#fc6255"             # ĵ-hat 기저벡터
-YELLOW = "#ffff00"          # 고유벡터1, 하이라이트
-BLUE = "#58c4dd"            # 고유벡터2
-TEAL = "#5cd0b3"
-PURPLE = "#9a72ac"
-TEXT = "#ece6e2"            # 크림색 텍스트
+# ManimCE 상수명 → 실제 hex
+BACKGROUND_COLOR = BLACK      # #000000 - 검정 배경 (3B1B 기본)
+I_HAT  = GREEN_C              # #83C167 - î-hat 기저벡터
+J_HAT  = RED_C                # #FC6255 - ĵ-hat 기저벡터
+EIGEN1 = YELLOW_C             # #F7D96F - 고유벡터1, 하이라이트
+EIGEN2 = BLUE_C               # #58C4DD - 고유벡터2
+TEAL   = TEAL_C               # #5CD0B3
+PURPLE = PURPLE_C             # #9A72AC
+GRID   = BLUE_E               # #236B8E - NumberPlane 그리드
+TEXT   = WHITE                # #FFFFFF
 ```
 
 ## 주요 참고 자료
@@ -108,3 +111,48 @@ docker exec -it manim-server manim -pql scenes/eigenvalue.py EigenvalueScene
 - ❌ 색상값 임의 지정 (항상 manim 상수 참조)
 - ❌ 프론트엔드에서 복잡한 그래픽 처리
 - ❌ 실시간 인터랙션을 위해 품질 타협
+
+## Deploy Configuration (configured by /setup-deploy)
+- Platform: Railway
+- Production URL: TBD (설정 후 업데이트 필요)
+- Deploy workflow: auto-deploy on push to main (GitHub 연동 후)
+- Deploy status command: HTTP health check at /health
+- Merge method: squash
+- Project type: web app / API
+- Post-deploy health check: https://<app>.railway.app/health
+
+### Custom deploy hooks
+- Pre-merge: none
+- Deploy trigger: automatic on push to main (Railway GitHub integration)
+- Deploy status: poll https://<app>.railway.app/health
+- Health check: https://<app>.railway.app/health
+
+### Railway 초기 배포 체크리스트
+1. railway.app → New Project → Deploy from GitHub repo
+2. 환경변수 설정: `GOOGLE_API_KEY=<your-key>`
+3. Settings → Networking → Generate Domain (또는 커스텀 도메인)
+4. Dockerfile 경로: `linear-algebra-visualizer/Dockerfile` (루트 기준)
+5. 배포 완료 후 이 파일의 Production URL 업데이트
+
+### 주의사항
+- `manimcommunity/manim:stable` 기반 이미지는 빌드 시간이 길 수 있음 (5-15분)
+- Railway Hobby 플랜: 빌드 메모리 8GB, 실행 메모리 8GB — Manim 렌더링에 충분
+- `output/` 디렉토리는 ephemeral (재배포 시 초기화) — 필요시 Railway Volume 추가
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
+
+Key routing rules:
+- Product ideas/brainstorming → invoke /office-hours
+- Strategy/scope → invoke /plan-ceo-review
+- Architecture → invoke /plan-eng-review
+- Design system/plan review → invoke /design-consultation or /plan-design-review
+- Full review pipeline → invoke /autoplan
+- Bugs/errors → invoke /investigate
+- QA/testing site behavior → invoke /qa or /qa-only
+- Code review/diff check → invoke /review
+- Visual polish → invoke /design-review
+- Ship/deploy/PR → invoke /ship or /land-and-deploy
+- Save progress → invoke /context-save
+- Resume context → invoke /context-restore

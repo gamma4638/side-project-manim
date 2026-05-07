@@ -4,8 +4,8 @@ import os
 import numpy as np
 from manim import *
 
-BG = "#0c1b33"
-TEXT = "#ece6e2"
+BG = BLACK
+TEXT = WHITE
 HIST_COLOR = "#58c4dd"
 NORMAL_COLOR = "#ffff00"
 

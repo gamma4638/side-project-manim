@@ -4,9 +4,9 @@ import os
 import numpy as np
 from manim import *
 
-BG = "#0c1b33"
-TEXT = "#ece6e2"
-GRID = "#4a5568"
+BG = BLACK
+TEXT = WHITE
+GRID = BLUE_E
 STD_COLOR = "#83c167"
 NEW_COLOR = "#fc6255"
 
