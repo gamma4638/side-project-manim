@@ -40,3 +40,6 @@ media/
 
 # Docker
 .docker
+
+# uv
+.venv/

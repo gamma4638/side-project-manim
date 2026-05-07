@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathViz — 강의 팩</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0b0d11;
+      --bg2:       #13161c;
+      --bg3:       #1a1e26;
+      --border:    rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.15);
+      --text:      #e8eaf0;
+      --muted:     #6b7280;
+      --muted2:    #9ca3af;
+      --accent:    #ffffff;
+      --green:     #4ade80;
+      --green-bg:  rgba(74,222,128,0.1);
+      --yellow:    #fbbf24;
+      --radius:    10px;
+      --mono:      'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-copy {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted2);
+      font-size: 12px;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-copy.copied { border-color: var(--green); color: var(--green); }
+
+    /* ── META BAR ────────────────────────────────── */
+    .meta-bar {
+      padding: 10px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .meta-bar span { display: flex; align-items: center; gap: 5px; }
+
+    /* ── MAIN CONTENT ────────────────────────────── */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 36px 32px 80px;
+    }
+
+    /* ── SECTION HEADER ──────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-left: 14px;
+      border-left: 3px solid var(--accent);
+    }
+    .section-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .section-header .count {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* ── VIDEO GRID ──────────────────────────────── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 0;
+    }
+
+    .video-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+      position: relative;
+    }
+    .video-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+    .video-card.active { border-color: rgba(255,255,255,0.35); }
+
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .card-thumb svg { width: 100%; height: 100%; }
+
+    .play-btn {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .video-card:hover .play-btn,
+    .video-card.active .play-btn { background: rgba(255,255,255,0.22); }
+    .play-btn svg { margin-left: 2px; }
+
+    .selected-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--bg);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .selected-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+    .card-body {
+      padding: 12px 14px;
+    }
+    .card-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+    .card-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .duration {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--bg3);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    /* ── EXPANDED PANEL ──────────────────────────── */
+    .expanded-panel {
+      display: none;
+      margin-top: 14px;
+      background: var(--bg2);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: expandIn 0.2s ease;
+    }
+    .expanded-panel.open { display: flex; }
+
+    @keyframes expandIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .expanded-video {
+      flex: 1.2;
+      background: #000;
+      position: relative;
+    }
+    .expanded-video video,
+    .expanded-video .video-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      display: block;
+      background: #000;
+    }
+    .video-controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: #0a0a0a;
+      border-top: 1px solid var(--border);
+    }
+    .ctrl-btn {
+      background: none;
+      border: none;
+      color: var(--muted2);
+      cursor: pointer;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
+    }
+    .ctrl-btn:hover { color: var(--text); }
+    .progress-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 2px; }
+    .time-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .speed-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .expanded-info {
+      flex: 1;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-left: 1px solid var(--border);
+    }
+    .expanded-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .expanded-desc {
+      font-size: 13px;
+      color: var(--muted2);
+      line-height: 1.7;
+    }
+    .expanded-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+    .tag {
+      padding: 4px 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--muted2);
+      font-family: var(--mono);
+    }
+
+    /* ── STUDENT PROMPT ──────────────────────────── */
+    .prompt-section {
+      margin: 40px 0;
+    }
+    .prompt-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .prompt-row {
+      display: flex;
+      gap: 10px;
+    }
+    .prompt-input {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .prompt-input::placeholder { color: var(--muted); }
+    .prompt-input:focus { border-color: rgba(255,255,255,0.3); }
+    .prompt-helper {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 7px;
+    }
+    .btn-generate {
+      flex-shrink: 0;
+      padding: 0 22px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .btn-generate:hover { opacity: 0.88; }
+    .btn-generate:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── QA ARCHIVE ──────────────────────────────── */
+    .qa-section { margin-top: 40px; }
+
+    .qa-section .section-header {
+      border-left-color: rgba(255,255,255,0.4);
+      margin-bottom: 16px;
+    }
+
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .qa-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .qa-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qa-thumb svg { width: 100%; height: 100%; }
+
+    .qa-body { padding: 10px 12px; }
+    .qa-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .qa-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+    .qa-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .qa-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      border-top: 1px solid var(--border);
+    }
+    .badge-done {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--green);
+      font-family: var(--mono);
+    }
+
+    /* Loading card */
+    .qa-card.loading { border-style: dashed; border-color: rgba(255,255,255,0.12); }
+    .loading-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .loading-bar {
+      width: 80%;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .loading-fill {
+      height: 100%;
+      background: rgba(255,255,255,0.4);
+      border-radius: 1px;
+      animation: loadPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes loadPulse {
+      0%   { width: 0%;   opacity: 1; }
+      70%  { width: 85%;  opacity: 1; }
+      100% { width: 100%; opacity: 0; }
+    }
+    .loading-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .loading-dots span {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: dotBlink 1.2s infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBlink {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+      40%            { opacity: 1;   transform: scale(1); }
+    }
+
+    /* ── SVG THUMBNAIL HELPERS ───────────────────── */
+    .thumb-bg { fill: #050608; }
+    .thumb-grid { stroke: rgba(255,255,255,0.04); stroke-width: 0.5; }
+    .thumb-axis { stroke: rgba(255,255,255,0.2); stroke-width: 0.8; }
+    .thumb-label { fill: rgba(255,255,255,0.5); font-size: 8px; font-family: 'JetBrains Mono', monospace; }
+    .thumb-eq { fill: rgba(255,255,255,0.7); font-size: 9px; font-family: 'JetBrains Mono', monospace; }
+    .thumb-curve { fill: none; stroke-width: 1.5; }
+
+    /* ── DIVIDER ─────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 40px 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <span class="logo">∑ MathViz</span>
+  <span class="header-title">선형대수학 3주차 — 고유값과 고유벡터</span>
+  <button class="btn-copy" id="copyBtn" onclick="copyUrl()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+    </svg>
+    URL 복사
+  </button>
+</header>
+
+<!-- META BAR -->
+<div class="meta-bar">
+  <span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+    핵심 개념 4개
+  </span>
+  <span style="color:rgba(255,255,255,0.12)">•</span>
+  <span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    학생 질문 3개
+  </span>
+  <span style="color:rgba(255,255,255,0.12)">•</span>
+  <span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    2026.05.06
+  </span>
+</div>
+
+<main>
+
+  <!-- SECTION A: 핵심 개념 영상 -->
+  <div class="section-header">
+    <h2>핵심 개념 영상</h2>
+    <span class="count">4개</span>
+  </div>
+
+  <div class="video-grid">
+
+    <!-- Card 1 (active) -->
+    <div class="video-card active" onclick="toggleCard(this, 0)">
+      <div class="card-thumb">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <rect class="thumb-bg" width="320" height="180"/>
+          <!-- grid -->
+          <g class="thumb-grid">
+            <line x1="40" y1="0" x2="40" y2="180"/><line x1="80" y1="0" x2="80" y2="180"/>
+            <line x1="120" y1="0" x2="120" y2="180"/><line x1="160" y1="0" x2="160" y2="180"/>
+            <line x1="200" y1="0" x2="200" y2="180"/><line x1="240" y1="0" x2="240" y2="180"/>
+            <line x1="280" y1="0" x2="280" y2="180"/>
+            <line x1="0" y1="36" x2="320" y2="36"/><line x1="0" y1="72" x2="320" y2="72"/>
+            <line x1="0" y1="108" x2="320" y2="108"/><line x1="0" y1="144" x2="320" y2="144"/>
+          </g>
+          <!-- axes -->
+          <line class="thumb-axis" x1="160" y1="10" x2="160" y2="170"/>
+          <line class="thumb-axis" x1="30" y1="90" x2="290" y2="90"/>
+          <text class="thumb-label" x="295" y="94">x</text>
+          <text class="thumb-label" x="163" y="18">y</text>
+          <!-- ellipse 1 -->
+          <ellipse cx="160" cy="90" rx="70" ry="35" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" transform="rotate(-25 160 90)"/>
+          <!-- eigenvectors -->
+          <line x1="160" y1="90" x2="220" y2="55" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" marker-end="url(#arr1)"/>
+          <line x1="160" y1="90" x2="100" y2="130" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="160" y1="90" x2="230" y2="90" stroke="rgba(255,255,255,0.3)" stroke-width="1" marker-end="url(#arr3)"/>
+          <text class="thumb-label" x="225" y="50">v</text>
+          <text class="thumb-label" x="94" y="145">w</text>
+          <!-- equations -->
+          <text class="thumb-eq" x="34" y="28">Av = λ₁v</text>
+          <text class="thumb-eq" x="200" y="168">Aw = λ₂w</text>
+          <defs>
+            <marker id="arr1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.7)"/>
+            </marker>
+            <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.45)"/>
+            </marker>
+            <marker id="arr3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.3)"/>
+            </marker>
+          </defs>
+        </svg>
+        <div class="play-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+        <div class="selected-badge"><span class="dot"></span> 선택됨</div>
+      </div>
+      <div class="card-body">
+        <div class="card-num">01</div>
+        <div class="card-title">고유값과 고유벡터 정의</div>
+        <div class="card-desc">고유값과 고유벡터의 정의와 기본 성질을 직관적으로 설명합니다</div>
+      </div>
+      <div class="card-footer">
+        <span class="duration">08:24</span>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="video-card" onclick="toggleCard(this, 1)">
+      <div class="card-thumb">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <rect class="thumb-bg" width="320" height="180"/>
+          <g class="thumb-grid">
+            <line x1="40" y1="0" x2="40" y2="180"/><line x1="80" y1="0" x2="80" y2="180"/>
+            <line x1="120" y1="0" x2="120" y2="180"/><line x1="160" y1="0" x2="160" y2="180"/>
+            <line x1="200" y1="0" x2="200" y2="180"/><line x1="240" y1="0" x2="240" y2="180"/>
+            <line x1="0" y1="45" x2="320" y2="45"/><line x1="0" y1="90" x2="320" y2="90"/><line x1="0" y1="135" x2="320" y2="135"/>
+          </g>
+          <line class="thumb-axis" x1="160" y1="10" x2="160" y2="170"/>
+          <line class="thumb-axis" x1="30" y1="90" x2="290" y2="90"/>
+          <text class="thumb-label" x="295" y="94">x</text>
+          <text class="thumb-label" x="163" y="18">y</text>
+          <!-- Matrix label -->
+          <text fill="rgba(255,255,255,0.6)" font-size="11" font-family="JetBrains Mono,monospace" x="50" y="40">A =</text>
+          <text fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono,monospace" x="72" y="35">[2  1]</text>
+          <text fill="rgba(255,255,255,0.6)" font-size="10" font-family="JetBrains Mono,monospace" x="72" y="48">[1  3]</text>
+          <!-- transformed ellipse -->
+          <ellipse cx="160" cy="90" rx="55" ry="30" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" transform="rotate(0 160 90)"/>
+          <ellipse cx="160" cy="90" rx="80" ry="22" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" transform="rotate(20 160 90)"/>
+          <!-- arrows showing transformation -->
+          <line x1="160" y1="90" x2="215" y2="67" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" marker-end="url(#arr4)"/>
+          <line x1="160" y1="90" x2="112" y2="118" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" marker-end="url(#arr5)"/>
+          <defs>
+            <marker id="arr4" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.6)"/></marker>
+            <marker id="arr5" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.35)"/></marker>
+          </defs>
+        </svg>
+        <div class="play-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-num">02</div>
+        <div class="card-title">행렬 대각화 과정</div>
+        <div class="card-desc">행렬을 고유벡터 기반으로 대각화하는 과정을 시각적으로 보여줍니다</div>
+      </div>
+      <div class="card-footer">
+        <span class="duration">10:32</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="video-card" onclick="toggleCard(this, 2)">
+      <div class="card-thumb">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <rect class="thumb-bg" width="320" height="180"/>
+          <g class="thumb-grid">
+            <line x1="40" y1="0" x2="40" y2="180"/><line x1="80" y1="0" x2="80" y2="180"/>
+            <line x1="120" y1="0" x2="120" y2="180"/><line x1="160" y1="0" x2="160" y2="180"/>
+            <line x1="200" y1="0" x2="200" y2="180"/><line x1="240" y1="0" x2="240" y2="180"/>
+            <line x1="0" y1="45" x2="320" y2="45"/><line x1="0" y1="90" x2="320" y2="90"/><line x1="0" y1="135" x2="320" y2="135"/>
+          </g>
+          <!-- lambda axis -->
+          <line class="thumb-axis" x1="30" y1="95" x2="295" y2="95"/>
+          <line class="thumb-axis" x1="160" y1="15" x2="160" y2="170"/>
+          <text class="thumb-label" x="286" y="104">λ</text>
+          <!-- polynomial curve p(λ) = (λ-1)(λ-3) -->
+          <path d="M 30,170 Q 55,160 80,140 Q 100,122 110,95 Q 115,80 120,60 Q 130,30 145,15" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.8"/>
+          <path d="M 145,15 Q 160,10 175,20 Q 185,28 190,50 Q 200,80 210,95 Q 220,110 230,125 Q 250,150 275,168" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.8"/>
+          <!-- zero markers -->
+          <circle cx="120" cy="95" r="3" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+          <circle cx="210" cy="95" r="3" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+          <text class="thumb-label" x="115" y="108">1</text>
+          <text class="thumb-label" x="205" y="108">3</text>
+          <text class="thumb-label" x="62" y="108">-2</text>
+          <text class="thumb-label" x="158" y="108">0</text>
+          <!-- equation -->
+          <text class="thumb-eq" x="32" y="30">p(λ) = det(A − λI)</text>
+        </svg>
+        <div class="play-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-num">03</div>
+        <div class="card-title">특성다항식</div>
+        <div class="card-desc">특성다항식의 정의와 성질, 그리고 고유값이 되는 이유를 설명합니다</div>
+      </div>
+      <div class="card-footer">
+        <span class="duration">07:18</span>
+      </div>
+    </div>
+
+  </div><!-- /video-grid -->
+
+  <!-- EXPANDED PANEL -->
+  <div class="expanded-panel open" id="expandedPanel">
+    <div class="expanded-video">
+      <div class="video-placeholder" id="videoPlaceholder">
+        <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <rect width="640" height="360" fill="#050608"/>
+          <g stroke="rgba(255,255,255,0.03)" stroke-width="0.5">
+            <line x1="80" y1="0" x2="80" y2="360"/><line x1="160" y1="0" x2="160" y2="360"/>
+            <line x1="240" y1="0" x2="240" y2="360"/><line x1="320" y1="0" x2="320" y2="360"/>
+            <line x1="400" y1="0" x2="400" y2="360"/><line x1="480" y1="0" x2="480" y2="360"/>
+            <line x1="560" y1="0" x2="560" y2="360"/>
+            <line x1="0" y1="72" x2="640" y2="72"/><line x1="0" y1="144" x2="640" y2="144"/>
+            <line x1="0" y1="216" x2="640" y2="216"/><line x1="0" y1="288" x2="640" y2="288"/>
+          </g>
+          <line x1="320" y1="20" x2="320" y2="340" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <line x1="60" y1="180" x2="580" y2="180" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <ellipse cx="320" cy="180" rx="140" ry="70" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1" transform="rotate(-25 320 180)"/>
+          <line x1="320" y1="180" x2="440" y2="110" stroke="rgba(255,255,255,0.65)" stroke-width="2.5" marker-end="url(#bigArr1)"/>
+          <line x1="320" y1="180" x2="200" y2="260" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" marker-end="url(#bigArr2)"/>
+          <text fill="rgba(255,255,255,0.4)" font-size="16" font-family="JetBrains Mono,monospace" x="100" y="60">Av = λ₁v</text>
+          <text fill="rgba(255,255,255,0.3)" font-size="14" font-family="JetBrains Mono,monospace" x="400" y="340">Aw = λ₂w</text>
+          <defs>
+            <marker id="bigArr1" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="rgba(255,255,255,0.65)"/></marker>
+            <marker id="bigArr2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="rgba(255,255,255,0.4)"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <div class="video-controls-bar">
+        <button class="ctrl-btn" title="재생">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <button class="ctrl-btn" title="10초 전">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        </button>
+        <button class="ctrl-btn" title="10초 후">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="ctrl-btn" title="음량">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+        </button>
+        <span class="time-label">00:00 / 08:24</span>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <button class="speed-btn">1x</button>
+        <button class="ctrl-btn" title="자막">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+        </button>
+        <button class="ctrl-btn" title="전체화면">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="expanded-info">
+      <div class="expanded-title" id="expandedTitle">1. 고유값과 고유벡터 정의</div>
+      <div class="expanded-desc" id="expandedDesc">
+        고유값(eigenvalue)은 선형변환 Av = λv 에서...<br><br>
+        0이 아닌 벡터 v가 선형변환 A에 의해 방향은 그대로이고 크기만 λ배로 변할 때의 스칼라 λ를 고유값이라 하고, 이때의 벡터 v를 고유벡터라고 합니다.<br><br>
+        이 영상에서는 정의를 기하학적으로 해석하고, 기본 성질들을 직관적으로 살펴봅니다.
+      </div>
+      <div class="expanded-tags" id="expandedTags">
+        <span class="tag">선형대수</span>
+        <span class="tag">고유값</span>
+        <span class="tag">고유벡터</span>
+        <span class="tag">정의</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STUDENT PROMPT -->
+  <div class="prompt-section">
+    <div class="prompt-label">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      이 강의에서 더 궁금한 게 있으신가요?
+    </div>
+    <div class="prompt-row">
+      <input
+        class="prompt-input"
+        type="text"
+        id="studentPrompt"
+        placeholder="예: 복소수 고유값은 어떻게 해석하나요?"
+        onkeydown="handlePromptKey(event)"
+      >
+      <button class="btn-generate" id="generateBtn" onclick="submitQuestion()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        영상 생성
+      </button>
+    </div>
+    <div class="prompt-helper">강의 내용을 바탕으로 새 시각화 영상을 생성합니다</div>
+  </div>
+
+  <!-- QA ARCHIVE -->
+  <div class="qa-section">
+    <div class="section-header">
+      <h2>학생 Q&A 아카이브</h2>
+      <span class="count" id="qaCount">3개</span>
+    </div>
+
+    <div class="qa-grid" id="qaGrid">
+
+      <!-- QA Card 1 -->
+      <div class="qa-card">
+        <div class="qa-thumb">
+          <svg viewBox="0 0 280 158" xmlns="http://www.w3.org/2000/svg">
+            <rect width="280" height="158" fill="#050608"/>
+            <!-- complex plane -->
+            <line x1="40" y1="79" x2="240" y2="79" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+            <line x1="140" y1="15" x2="140" y2="143" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="242" y="83">Re</text>
+            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="143" y="18">Im</text>
+            <!-- complex eigenvalues -->
+            <circle cx="190" cy="45" r="3" fill="rgba(255,255,255,0.7)"/>
+            <circle cx="90" cy="113" r="3" fill="rgba(255,255,255,0.7)"/>
+            <!-- conjugate line -->
+            <line x1="140" y1="79" x2="190" y2="45" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <line x1="140" y1="79" x2="90" y2="113" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <!-- circle -->
+            <circle cx="140" cy="79" r="55" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <text fill="rgba(255,255,255,0.5)" font-size="8" font-family="JetBrains Mono,monospace" x="193" y="42">λ = a+bi</text>
+            <text fill="rgba(255,255,255,0.5)" font-size="8" font-family="JetBrains Mono,monospace" x="62" y="128">λ = a−bi</text>
+          </svg>
+          <div class="play-btn" style="width:34px;height:34px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+        </div>
+        <div class="qa-body">
+          <div class="qa-num">01</div>
+          <div class="qa-title">복소수 고유값의 의미</div>
+          <div class="qa-desc">복소수 고유값이 나타내는 회전과 스케일 변화의 의미를 설명합니다</div>
+        </div>
+        <div class="qa-footer">
+          <span class="duration">09:15</span>
+          <span class="badge-done">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            완료
+          </span>
+        </div>
+      </div>
+
+      <!-- QA Card 2 -->
+      <div class="qa-card">
+        <div class="qa-thumb">
+          <svg viewBox="0 0 280 158" xmlns="http://www.w3.org/2000/svg">
+            <rect width="280" height="158" fill="#050608"/>
+            <line x1="40" y1="79" x2="240" y2="79" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+            <line x1="140" y1="15" x2="140" y2="143" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="242" y="83">x</text>
+            <text fill="rgba(255,255,255,0.45)" font-size="8" font-family="JetBrains Mono,monospace" x="143" y="18">y</text>
+            <!-- stretched vectors -->
+            <line x1="140" y1="79" x2="210" y2="50" stroke="rgba(255,255,255,0.65)" stroke-width="2" marker-end="url(#qArr1)"/>
+            <line x1="140" y1="79" x2="195" y2="35" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#qArr2)"/>
+            <line x1="140" y1="79" x2="80" y2="120" stroke="rgba(255,255,255,0.5)" stroke-width="2" marker-end="url(#qArr3)"/>
+            <text fill="rgba(255,255,255,0.5)" font-size="8" font-family="JetBrains Mono,monospace" x="30" y="30">A</text>
+            <text fill="rgba(255,255,255,0.5)" font-size="9" font-family="JetBrains Mono,monospace" x="50" y="145">기하적 해석</text>
+            <defs>
+              <marker id="qArr1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.65)"/></marker>
+              <marker id="qArr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.35)"/></marker>
+              <marker id="qArr3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.5)"/></marker>
+            </defs>
+          </svg>
+          <div class="play-btn" style="width:34px;height:34px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+        </div>
+        <div class="qa-body">
+          <div class="qa-num">02</div>
+          <div class="qa-title">기하적 해석</div>
+          <div class="qa-desc">고유벡터 방향과 선형변환의 기하학적 의미를 다양한 예제로 살펴봅니다</div>
+        </div>
+        <div class="qa-footer">
+          <span class="duration">07:48</span>
+          <span class="badge-done">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            완료
+          </span>
+        </div>
+      </div>
+
+      <!-- QA Card 3 (loading) -->
+      <div class="qa-card loading" id="loadingCard">
+        <div class="loading-thumb">
+          <div class="spinner"></div>
+          <div class="loading-text">생성 중...</div>
+          <div class="loading-bar"><div class="loading-fill"></div></div>
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="qa-body">
+          <div class="qa-num">03</div>
+          <div class="qa-title" style="color:var(--muted)">시각화 영상을 생성하고 있어요</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const CARDS = [
+    {
+      title: '1. 고유값과 고유벡터 정의',
+      desc: '고유값(eigenvalue)은 선형변환 Av = λv 에서...\n\n0이 아닌 벡터 v가 선형변환 A에 의해 방향은 그대로이고 크기만 λ배로 변할 때의 스칼라 λ를 고유값이라 하고, 이때의 벡터 v를 고유벡터라고 합니다.\n\n이 영상에서는 정의를 기하학적으로 해석하고, 기본 성질들을 직관적으로 살펴봅니다.',
+      tags: ['선형대수', '고유값', '고유벡터', '정의']
+    },
+    {
+      title: '2. 행렬 대각화 과정',
+      desc: '행렬 대각화(diagonalization)는 행렬 A를 PDP⁻¹ 형태로 분해하는 과정입니다.\n\nP는 고유벡터들로 이루어진 행렬이고, D는 고유값들이 대각에 놓인 대각행렬입니다. 대각화가 가능한 조건과 그 기하학적 의미를 살펴봅니다.',
+      tags: ['대각화', 'PDP⁻¹', '고유공간', '분해']
+    },
+    {
+      title: '3. 특성다항식',
+      desc: '특성다항식 p(λ) = det(A − λI)는 행렬 A의 고유값을 구하는 핵심 도구입니다.\n\np(λ) = 0 을 만족하는 λ가 바로 고유값이며, 이 다항식의 차수는 행렬의 크기와 같습니다. 그래프로 고유값의 위치를 직관적으로 파악하는 방법을 배웁니다.',
+      tags: ['특성다항식', '행렬식', '고유값', '방정식']
+    }
+  ];
+
+  let activeIdx = 0;
+
+  function toggleCard(el, idx) {
+    const cards = document.querySelectorAll('.video-card');
+    const panel = document.getElementById('expandedPanel');
+
+    if (activeIdx === idx && panel.classList.contains('open')) {
+      panel.classList.remove('open');
+      el.classList.remove('active');
+      activeIdx = -1;
+      return;
+    }
+
+    cards.forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    activeIdx = idx;
+
+    const data = CARDS[idx];
+    document.getElementById('expandedTitle').textContent = data.title;
+
+    const descEl = document.getElementById('expandedDesc');
+    descEl.innerHTML = data.desc.replace(/\n\n/g, '<br><br>');
+
+    const tagsEl = document.getElementById('expandedTags');
+    tagsEl.innerHTML = data.tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+    panel.classList.remove('open');
+    setTimeout(() => panel.classList.add('open'), 10);
+
+    // scroll into view
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+
+  function copyUrl() {
+    navigator.clipboard.writeText(window.location.href).catch(() => {});
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 복사됨`;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> URL 복사`;
+    }, 2000);
+  }
+
+  function handlePromptKey(e) {
+    if (e.key === 'Enter') submitQuestion();
+  }
+
+  function submitQuestion() {
+    const input = document.getElementById('studentPrompt');
+    const q = input.value.trim();
+    if (!q) return;
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    input.disabled = true;
+    input.value = '';
+
+    addLoadingCard(q);
+
+    // Simulate completion after 3s (replace with real API call)
+    setTimeout(() => {
+      btn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }, 3000);
+  }
+
+  function addLoadingCard(question) {
+    const grid = document.getElementById('qaGrid');
+    const count = grid.querySelectorAll('.qa-card:not(.template)').length + 1;
+
+    const card = document.createElement('div');
+    card.className = 'qa-card loading';
+    card.innerHTML = `
+      <div class="loading-thumb">
+        <div class="spinner"></div>
+        <div class="loading-text">생성 중...</div>
+        <div class="loading-bar"><div class="loading-fill"></div></div>
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="qa-body">
+        <div class="qa-num">0${count}</div>
+        <div class="qa-title" style="color:var(--muted)">${question.length > 22 ? question.slice(0, 22) + '…' : question}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    const countEl = document.getElementById('qaCount');
+    countEl.textContent = count + '개';
+
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
+</body>
+</html>

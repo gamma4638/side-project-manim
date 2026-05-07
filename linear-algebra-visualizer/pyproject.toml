@@ -1,0 +1,26 @@
+[project]
+name = "linear-algebra-visualizer"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    # manim, pycairo, numpy, scipy 등 Manim 의존성은
+    # manimcommunity/manim Docker base image에 사전 설치됨
+    "fastapi==0.109.2",
+    "uvicorn[standard]==0.27.1",
+    "python-multipart==0.0.9",
+    "pydantic==2.6.1",
+    "google-genai>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.24.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
